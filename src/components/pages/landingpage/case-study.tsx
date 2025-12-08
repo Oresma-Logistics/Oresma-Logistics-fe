@@ -7,9 +7,9 @@ export default function CaseStudy() {
       <div className="flex flex-col gap-2 items-center">
         <SubHeader title="Case Studies" />
       </div>
-      <div className=" w-full flex justify-center mt-10 lg:h-[400px] md:h-[320px]">
+      <div className=" w-full flex justify-center mt-10 lg:h-[400px] md:h-[350px]">
         <div className="w-full max-w-5xl bg-[#E6E8EB] h-auto md:py-8 md:px-5 py-6 px-3 flex sm:flex-row flex-col-reverse  sm:gap-5 gap-7 rounded-md relative">
-          <div className="flex-1 flex items-center sm:justify-start justify-center">
+          <div className="flex-1 flex items-center sm:justify-start justify-center md:py-5">
             <div>
               <h2 className="font-semibold text-[1.75rem] text-primaryT sm:text-start text-center">
                 AI-Based Search Prompts
