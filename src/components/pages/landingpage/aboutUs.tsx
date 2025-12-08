@@ -17,7 +17,7 @@ export default function AboutUs() {
         </div>
         <div className="px-2 flex flex-col md:items-start items-center">
           <SubHeader title="About Us" />
-          <p className="mt-5 text-base text-[#021533] max-w-[540px] font-normal md:text-start text-center">
+          <p className="mt-5 text-base text-primaryT max-w-[540px] font-normal md:text-start text-center">
             Chongqing Zeta Supply Chain Co., Ltd. Since 2006, we have been
             deeply involved in the field of Chinese automobile exports,
             authorized by the Chinese government to promote and sell high
@@ -35,7 +35,7 @@ export default function AboutUs() {
             style={{ animationDelay: "0.4s" }}
             asChild
           >
-            <Link href={"/auth/login"}> GET A QUOTE</Link>
+            <Link href={"/auth/login"}> GET STARTED</Link>
           </Button>
         </div>
       </div>

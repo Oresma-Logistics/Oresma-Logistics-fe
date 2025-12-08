@@ -44,12 +44,23 @@ export default function Process() {
                 {/* Step Content */}
                 <div className="flex flex-col items-center text-center gap-4 flex-1">
                   <div className="flex gap-2">
-                    <Image
-                      src={step.numberimg}
-                      alt={step.title}
-                      width={96}
-                      height={96}
-                    />
+                    {index === 0 ? (
+                      <div className="relative h-[63px] w-24">
+                        <Image
+                          src={step.numberimg}
+                          alt={step.title}
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <Image
+                        src={step.numberimg}
+                        alt={step.title}
+                        width={96}
+                        height={96}
+                      />
+                    )}
                     {/* Connecting Line (not after last step) */}
                   </div>
 

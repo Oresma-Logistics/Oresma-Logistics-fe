@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -34,7 +36,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <a
               href="#home"
               className="text-2xl font-bold text-foreground hover:text-primary transition-colors duration-300"
@@ -63,7 +65,7 @@ export function Navbar() {
               className="w-full bg-[#F75720] hover:bg-[#F75720]/90 text-primary-foreground hover:scale-105 transition-transform duration-300 rounded-tl-3xl rounded-br-3xl"
               asChild
             >
-              <Link href={"/auth/login"}>GET Started</Link>
+              <Link href={"/auth/login"}>GET STARTED</Link>
             </Button>
           </div>
 
@@ -82,14 +84,18 @@ export function Navbar() {
 
       {/* Mobile Navigation */}
       {isOpen && (
-        <div className="lg:hidden bg-white border-t border-border animate-slide-down">
+        <motion.div
+          initial={{ opacity: 0, y: -100 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="lg:hidden bg-white border-t border-border animate-slide-down"
+        >
           <div className="px-4 pt-2 pb-4 space-y-2">
             {navLinks.map((link, index) => (
               <a
                 key={link.name}
                 href={link.href}
                 className="block px-3 py-2 text-sm font-medium text-foreground hover:text-primary hover:bg-accent rounded-md transition-all duration-300 hover:translate-x-2 animate-fade-in-up"
-                style={{ animationDelay: `${index * 0.05}s` }}
                 onClick={() => setIsOpen(false)}
               >
                 {link.name}
@@ -100,11 +106,11 @@ export function Navbar() {
                 className="w-full bg-[#F75720] hover:bg-[#F75720]/90 text-primary-foreground hover:scale-105 transition-transform duration-300 rounded-tl-3xl rounded-br-3xl"
                 asChild
               >
-                <Link href={"/auth/login"}>GET A QUOTE</Link>
+                <Link href={"/auth/login"}>GET STARTED</Link>
               </Button>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
     </nav>
   );
