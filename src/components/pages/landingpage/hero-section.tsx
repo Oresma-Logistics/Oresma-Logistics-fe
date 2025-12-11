@@ -82,7 +82,7 @@ export function HeroSection() {
 
         {/* Stats Card */}
         <div
-          className="absolute sm:-bottom-8 -bottom-10 right-4 md:right-12 lg:right-24 bg-navy text-navy-foreground rounded-2xl p-6 md:p-8 shadow-2xl max-w-lg animate-fade-in-up hover:scale-105 transition-transform duration-300 bg-primaryT rounded-tl-[120px] rounded-br-[120px]"
+          className="absolute sm:-bottom-8 -bottom-10 right-2 md:right-12 lg:right-24 bg-navy text-navy-foreground rounded-2xl p-6 md:p-8 shadow-2xl max-w-lg animate-fade-in-up hover:scale-105 transition-transform duration-300 bg-primaryT rounded-tl-[120px] rounded-br-[120px]"
           style={{ animationDelay: "0.3s" }}
         >
           <div className="grid grid-cols-3 sm:gap-6 gap-4 md:gap-8 text-white">

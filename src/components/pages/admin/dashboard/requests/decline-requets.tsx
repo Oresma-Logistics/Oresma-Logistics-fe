@@ -79,7 +79,7 @@ export function DeclineRequest({ id }: Props) {
             </AlertDialogDescription>
           </div>
           <div className="mt-4 w-full">
-            <AlertDialogTitle className="!text-base text-abodeBlack">
+            <AlertDialogTitle className="text-base! text-abodeBlack">
               Reason for Decline
             </AlertDialogTitle>
             {Error && <p className="text-red-500">{Error}</p>}

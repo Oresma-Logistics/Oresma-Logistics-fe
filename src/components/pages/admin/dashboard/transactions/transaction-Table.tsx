@@ -66,7 +66,20 @@ export function AdminTransactionsTable() {
               </span>
             ),
           },
-          { label: "Created At", key: "createdAt" },
+          {
+            label: "Created At",
+            key: "createdAt",
+            render: (value) => {
+              return new Date(value).toLocaleString();
+            },
+          },
+          {
+            label: "Updated At",
+            key: "updatedAt",
+            render: (value) => {
+              return new Date(value).toLocaleString();
+            },
+          },
         ]}
         count={withdrawalData.count}
         showCountBadge={true}

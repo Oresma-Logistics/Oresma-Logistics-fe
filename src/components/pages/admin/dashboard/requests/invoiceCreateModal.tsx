@@ -49,9 +49,8 @@ export default function CreateInoiveModal({ open, onOpenChange, id }: Props) {
     mutationKey: ["CeateInvoice"],
     onSuccess: (data) => {
       console.log(data);
-      queryClient.invalidateQueries({
-        queryKey: ["AdminRideRequest"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["AdminRideRequest"] });
+      queryClient.invalidateQueries({ queryKey: ["Single Request", id] });
     },
     onError: (error) => {
       showToast.error("Failed to create Invoice", error.message);

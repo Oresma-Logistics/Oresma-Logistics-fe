@@ -8,15 +8,21 @@ import SkeletonCardList from "@/components/shared/skeleton/card-list-skeleton";
 import { TransactionsResponse } from "@/_lib/type/transaction/transaction";
 import { ApproveWithdraw, DeclineWithdraw } from "./decline-accept-withdraw";
 import { Transaction } from "@/_lib/type/transaction/transaction";
+import { useSearchParams } from "next/navigation";
 
 export function AdminWithdrawalRequests() {
+  const params = useSearchParams();
+  const filters = {
+    status: params.get("status") || null,
+  };
+
   const {
     data: withdrawalData,
     isPending,
     error: Error,
     isError,
   } = useQuery<TransactionsResponse>({
-    queryKey: ["WithdrawalRequests"],
+    queryKey: ["WithdrawalRequests", filters],
     queryFn: getWithdrawalRequests,
   });
   if (isPending) {
@@ -78,12 +84,15 @@ export function AdminWithdrawalRequests() {
           {
             label: "Created At",
             key: "createdAt",
-            render(value) {
-              return new Date(value).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "short",
-                day: "2-digit",
-              });
+            render: (value) => {
+              return new Date(value).toLocaleString();
+            },
+          },
+          {
+            label: "Updated At",
+            key: "updatedAt",
+            render: (value) => {
+              return new Date(value).toLocaleString();
             },
           },
         ]}

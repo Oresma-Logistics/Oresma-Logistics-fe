@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { SubHeader } from "@/components/shared/landingpage/sub-header";
@@ -5,7 +6,7 @@ import Link from "next/link";
 
 export default function AboutUs() {
   return (
-    <main className="max-w-7xl mx-auto">
+    <main className="max-w-7xl mx-auto" id="about">
       <div className="w-full px-0 py-2 flex justify-center items-center md:flex-row flex-col gap-8 ">
         <div className="w-[332px] h-[337px] relative">
           <Image
@@ -16,7 +17,9 @@ export default function AboutUs() {
           />
         </div>
         <div className="px-2 flex flex-col md:items-start items-center">
-          <SubHeader title="About Us" />
+          <div>
+            <SubHeader title="About Us" />
+          </div>
           <p className="mt-5 text-base text-primaryT max-w-[540px] font-normal md:text-start text-center">
             Chongqing Zeta Supply Chain Co., Ltd. Since 2006, we have been
             deeply involved in the field of Chinese automobile exports,

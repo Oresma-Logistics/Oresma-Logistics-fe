@@ -5,7 +5,10 @@ import PeopleThumbs from "@/assest/peopleThumbs.svg";
 import Image from "next/image";
 export default function Services() {
   return (
-    <section className="w-full relative  max-w-7xl mx-auto px-0 py-2">
+    <section
+      className="w-full relative  max-w-7xl mx-auto px-0 py-2"
+      id="services"
+    >
       <div className="flex md:flex-row flex-col lg::gap-17 md:gap-15 gap-13 mt-10 justify-center max-md:items-center">
         <div className="flex flex-col md:gap-15 gap-13 md:items-start items-center">
           <div className="flex flex-col items-center">

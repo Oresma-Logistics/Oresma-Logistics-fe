@@ -9,8 +9,7 @@ import { useState } from "react";
 import CreateInoiveModal from "../invoiceCreateModal";
 import { adminGetRideRequests } from "@/_lib/api/admin/get-ride-request";
 import { useQuery } from "@tanstack/react-query";
-import { AdminDelcineRequest } from "@/_lib/api/admin/decline-requests";
-import { useMutation } from "@tanstack/react-query";
+
 import {
   RideRequest,
   RideRequestsResponse,
@@ -18,13 +17,19 @@ import {
 import SkeletonCardList from "@/components/shared/skeleton/card-list-skeleton";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/dashboard/status-card";
-import { showToast } from "@/components/shared/toast";
+
 import { DeclineRequest } from "../decline-requets";
+import { useSearchParams } from "next/navigation";
 
 export function RequestsTable() {
   const navigate = useRouter();
+  const params = useSearchParams();
 
   const [seletedId, setSelectedId] = useState<string>("");
+  const filters = {
+    status: params.get("status") || null,
+    invoiceSent: params.get("invoiceSent") || null,
+  };
 
   const {
     data: Requests,
@@ -33,7 +38,7 @@ export function RequestsTable() {
     error: Error,
   } = useQuery<RideRequestsResponse>({
     queryFn: adminGetRideRequests,
-    queryKey: ["AdminRideRequest"],
+    queryKey: ["AdminRideRequest", filters],
     // refetchInterval: 5000, // 5 seconds
     // refetchOnReconnect: true,
   });
@@ -135,6 +140,7 @@ export function RequestsTable() {
             { key: "dropoff.address", label: "Final destination" },
             { key: "userId.name", label: "Customer Name" },
             { key: "userId.email", label: "Customer Email" },
+
             {
               key: "invoiceSent",
               label: "Invoice Sent",
@@ -153,6 +159,20 @@ export function RequestsTable() {
               label: "Status",
               render(value) {
                 return <StatusBadge status={value} />;
+              },
+            },
+            {
+              key: "createdAt",
+              label: "Date Created",
+              render: (value) => {
+                return new Date(value).toLocaleString();
+              },
+            },
+            {
+              label: "Updated At",
+              key: "updatedAt",
+              render: (value) => {
+                return new Date(value).toLocaleString();
               },
             },
           ]}

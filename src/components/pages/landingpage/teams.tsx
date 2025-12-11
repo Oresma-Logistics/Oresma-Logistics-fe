@@ -15,16 +15,16 @@ const teams = [
     title: "Assistant Manager",
     img: "https://res.cloudinary.com/duyhha3mz/image/upload/v1764945970/WhatsApp_Image_2025-12-05_at_14.21.28_3cf926db_falwjm.jpg",
   },
-  {
-    name: "Mayowa Elebute",
-    id: 3,
-    title: "Founder",
-    img: "https://res.cloudinary.com/duyhha3mz/image/upload/v1759716602/db527da01185893706d5f6280b0b2089fff8c5a7_shv1kd.jpg",
-  },
+  // {
+  //   name: "Mayowa Elebute",
+  //   id: 3,
+  //   title: "Founder",
+  //   img: "https://res.cloudinary.com/duyhha3mz/image/upload/v1759716602/db527da01185893706d5f6280b0b2089fff8c5a7_shv1kd.jpg",
+  // },
 ];
 export function Team() {
   return (
-    <section className="w-full max-7xl mx-auto ">
+    <section className="w-full max-7xl mx-auto " id="team">
       <div className="flex flex-col gap-2 items-center py-7">
         <SubHeader title="Our Experts" />
         <p className="text-base font-normal text-center max-w-[500px]">
@@ -42,7 +42,7 @@ export function Team() {
               className="object-cover animate-zoom-in rounded-tl-[96px] rounded-br-[96px]"
             />
             <div className="absolute z-2 -bottom-1 -left-1 w-full h-auto  flex justify-center">
-              <div className="py-2 px-9 flex flex-col gap-1 bg-white rounded-md items-center">
+              <div className="py-2 px-9 flex flex-col gap-1 bg-[#F0F4FA] rounded-md items-center">
                 <h2 className="font-semibold text-lg text-center">
                   {individual.name}
                 </h2>

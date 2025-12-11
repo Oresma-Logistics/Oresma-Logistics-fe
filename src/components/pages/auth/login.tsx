@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function LoginComponent() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/20 to-background p-4 animate-fade-in">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-secondary/20 to-background p-4 animate-fade-in">
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
         {/* Left side - Branding */}
         <div className="hidden lg:flex flex-col justify-center space-y-6 animate-slide-in-right">

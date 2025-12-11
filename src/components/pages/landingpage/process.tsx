@@ -27,7 +27,7 @@ const processSteps = [
 
 export default function Process() {
   return (
-    <section className="w-full max-w-7xl mx-auto lg:px-4 py-16">
+    <section className="w-full max-w-7xl mx-auto lg:px-4 py-16" id="process">
       <div className="flex flex-col gap-12 items-center">
         <SubHeader title="Our Process" />
 
