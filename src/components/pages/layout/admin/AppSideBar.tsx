@@ -30,6 +30,7 @@ import { logOut } from "@/_lib/api/auth/logout";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { showToast } from "@/components/shared/toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 const menuItems = [
   {
@@ -74,6 +75,7 @@ export default function AdminSideBar({
   isMobileOpen = false,
   onMobileClose,
 }: SidebarProps = {}) {
+  const queryClient = useQueryClient();
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const pathname = usePathname();
   const navigate = useRouter();
@@ -86,6 +88,7 @@ export default function AdminSideBar({
     onSuccess: () => {
       showToast.success("Logout Successful");
       navigate.push("/auth/login");
+      queryClient.clear();
     },
   });
 

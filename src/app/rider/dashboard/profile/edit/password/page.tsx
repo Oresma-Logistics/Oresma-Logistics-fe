@@ -1,5 +1,5 @@
 import { Breadcrumb } from "@/components/shared/dashboard/breadcrumb";
-// import RiderChangePasssword from "@/components/pages/rider/dashbord/profile/change-password";
+import RiderChangePasssword from "@/components/pages/rider/dashbord/profile/change-password";
 export default function EditProfilePassword() {
   return (
     <div className="space-y-6">
@@ -12,8 +12,7 @@ export default function EditProfilePassword() {
         ]}
       />
       <div>
-        {/* <RiderChangePasssword /> */}
-        testing
+        <RiderChangePasssword />
       </div>
     </div>
   );

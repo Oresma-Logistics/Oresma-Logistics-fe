@@ -25,6 +25,7 @@ import { logOut } from "@/_lib/api/auth/logout";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { showToast } from "@/components/shared/toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 const menuItems = [
   { icon: User, label: "Profile", href: "/rider/dashboard/profile" },
@@ -58,6 +59,7 @@ export default function RiderSideBar({
   isMobileOpen = false,
   onMobileClose,
 }: SidebarProps = {}) {
+  const queryClient = useQueryClient();
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const pathname = usePathname();
   const navigate = useRouter();
@@ -69,6 +71,7 @@ export default function RiderSideBar({
     mutationFn: logOut,
     onSuccess: () => {
       showToast.success("Logout Successful");
+      queryClient.clear();
       navigate.push("/auth/login");
     },
   });

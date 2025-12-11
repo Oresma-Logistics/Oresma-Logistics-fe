@@ -138,10 +138,14 @@ export function AddWalletPin() {
                   <div className="flex flex-col gap-4 mt-7">
                     <Button
                       type="submit"
-                      // disabled={mutation.isPending}
+                      disabled={mutation.isPending || mutation.isSuccess}
                       className="w-full text-white py-3 font-medium rounded-lg transition-colors cursor-pointer"
                     >
-                      Confirm Pin
+                      {mutation.isPending
+                        ? "Creating Pin...."
+                        : mutation.isSuccess
+                        ? "Pin Created "
+                        : "Confirm Pin"}
                     </Button>
                     <Button
                       type="submit"

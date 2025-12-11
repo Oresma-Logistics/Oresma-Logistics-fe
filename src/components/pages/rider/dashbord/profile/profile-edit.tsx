@@ -140,14 +140,14 @@ export function EditComponent() {
                   "Update Profile"
                 )}
               </Button>
-              {/* <div className="text-center text-sm text-muted-foreground">
+              <div className="text-center text-sm text-muted-foreground">
                 <Link
                   href="/rider/dashboard/profile/edit/password"
                   className="text-primaryT hover:text-primaryT/80 font-semibold transition-colors"
                 >
                   Change Password
                 </Link>
-              </div> */}
+              </div>
             </CardFooter>
           </form>
         </Card>
