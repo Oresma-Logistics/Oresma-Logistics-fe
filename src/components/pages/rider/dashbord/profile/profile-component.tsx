@@ -23,7 +23,7 @@ export default function RiderProfileComponent() {
   } = useQuery<RiderProfileResponse>({
     queryKey: ["riderProfile"],
     queryFn: getRiderProfile,
-    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+    staleTime: 24 * 60 * 60 * 1000, // 5 hours
   });
 
   if (isPending) {

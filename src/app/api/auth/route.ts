@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: data?.success,
-          message: data?.message,
+          message: data?.message ?? "Network Error",
           isRider: data?.user?.role === "rider" ? true : false,
         },
         { status: data.status }
@@ -63,12 +63,14 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.log("Registration error:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        message: error || "Failed to register. Please try again.",
-      },
-      { status: 500 }
-    );
+    if (error instanceof Error) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Failed to register. Please try again.",
+        },
+        { status: 500 }
+      );
+    }
   }
 }

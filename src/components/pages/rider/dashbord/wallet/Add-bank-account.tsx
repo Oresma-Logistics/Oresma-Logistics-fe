@@ -18,6 +18,7 @@ import { useState } from "react";
 import { BankDetails } from "@/_lib/type/wallets/wallet";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 interface AddBankProps {
   isOpen: boolean;
   onClose: () => void;
@@ -29,6 +30,7 @@ export function AddBankAccount({ isOpen, onClose }: AddBankProps) {
   const [selectedBank, setSelectedBank] = useState<null | string>(null);
   const [bankCode, setBankCode] = useState<null | string>(null);
   const [selectedError, setSelectedError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   type FormData = z.infer<typeof signUpScheme>;
   const signUpScheme = z.object({
@@ -52,11 +54,9 @@ export function AddBankAccount({ isOpen, onClose }: AddBankProps) {
   const mutation = useMutation({
     mutationFn: (data: BankDetails) => AddBankAccountService(data),
     onSuccess: (data) => {
-      showToast.success(
-        "Bank account added successfully",
-        data.response.data.message
-      );
+      showToast.success("Bank account added successfully", data.message);
       onClose();
+      queryClient.invalidateQueries({ queryKey: ["riderProfile"] });
     },
     onError: (error) => {
       showToast.error("Error adding bank account", error.message);
