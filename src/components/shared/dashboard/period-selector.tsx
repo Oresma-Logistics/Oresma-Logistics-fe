@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouterParams } from "@/_lib/functions/params-router-function";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,11 +36,16 @@ export function PeriodSelector({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { clearParams } = useRouterParams();
 
   const currentPeriod =
     searchParams.get(paramName) || defaultValue || options[0]?.value;
 
   const handlePeriodChange = (value: string) => {
+    if (value === defaultValue) {
+      clearParams({ paramName: paramName });
+      return;
+    }
     const params = new URLSearchParams(searchParams.toString());
     params.set(paramName, value);
     router.push(`${pathname}?${params.toString()}`);

@@ -37,6 +37,7 @@ export function AlertBanner({
           alt="alert banner"
           fill
           className="object-cover rounded-xl object-center"
+          priority
         />
         <div className="absolute inset-0 bg-black/40 rounded-xl" />
       </div>

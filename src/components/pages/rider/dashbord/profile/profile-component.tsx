@@ -11,6 +11,8 @@ import { RiderProfileResponse } from "@/_lib/type/auth/users";
 import { PerformanceRiderProfile } from "./perfomance-profile";
 import { RiderProfileStatus } from "./account-status";
 import { VehicleRiderProfile } from "./vehicle-profile";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function RiderProfileComponent() {
   // const [isEditing] = useState(false);
@@ -51,7 +53,7 @@ export default function RiderProfileComponent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 bg-gradient-to-br from-primaryT to-primaryT/80 rounded-full flex items-center justify-center text-3xl font-bold text-white">
+              <div className="w-20 h-20 bg-linear-to-br from-primaryT to-primaryT/80 rounded-full flex items-center justify-center text-3xl font-bold text-white">
                 {initials}
               </div>
               <div>
@@ -60,6 +62,9 @@ export default function RiderProfileComponent() {
                 </h2>
               </div>
             </div>
+            <Button asChild>
+              <Link href={"/rider/dashboard/profile/edit"}>Edit Profile</Link>
+            </Button>
           </CardHeader>
         </Card>
 
