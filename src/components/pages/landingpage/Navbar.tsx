@@ -30,7 +30,9 @@ export function Navbar() {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "bg-white shadow-md py-2" : "bg-white shadow-sm py-0"
+        isScrolled
+          ? "bg-[#F0F4FA] shadow-md py-2"
+          : "bg-[#F0F4FA] shadow-sm py-0"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -88,7 +90,7 @@ export function Navbar() {
           initial={{ opacity: 0, y: -100 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
-          className="lg:hidden bg-white border-t border-border animate-slide-down"
+          className="lg:hidden bg-[#F0F4FA] border-t border-border animate-slide-down"
         >
           <div className="px-4 pt-2 pb-4 space-y-2">
             {navLinks.map((link, index) => (
