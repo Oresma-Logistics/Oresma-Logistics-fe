@@ -78,16 +78,18 @@ export function RegisterForm() {
   return (
     <Card className="w-full max-w-md mx-auto shadow-2xl border-border/50 animate-fade-in-up lg:order-2">
       <CardHeader className="space-y-1">
-        <div className="flex lg:hidden items-center gap-2 mb-4">
-          <div className="w-10 h-10 relative rounded-lg flex items-center justify-center">
-            <Image src={"/logo.svg"} alt="Oresema Logo" fill />
+        <Link href={"/"}>
+          <div className="flex lg:hidden items-center gap-2 mb-4">
+            <div className="w-10 h-10 relative rounded-lg flex items-center justify-center">
+              <Image src={"/logo.svg"} alt="Oresema Logo" fill />
+            </div>
+            <span className="text-2xl font-bold text-secondaryT">Oresma</span>
           </div>
-          <span className="text-2xl font-bold text-secondaryT">Oresma</span>
-        </div>
+        </Link>
         <CardTitle className="text-3xl font-bold text-secondaryT text-center ">
           Create account
         </CardTitle>
-        <CardDescription className="text-base text-muted-foreground text-center">
+        <CardDescription className="text-base text-primaryT text-center">
           Join Oresma Logistics and start shipping smarter
         </CardDescription>
       </CardHeader>
@@ -147,7 +149,7 @@ export function RegisterForm() {
               "Create account"
             )}
           </Button>
-          <div className="text-center text-sm text-muted-foreground">
+          <div className="text-center text-sm text-primaryT">
             Already have an account?{" "}
             <Link
               href="/auth/login"

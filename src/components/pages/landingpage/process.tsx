@@ -70,14 +70,14 @@ export default function Process() {
                   </h3>
 
                   {/* Description */}
-                  <p className="text-sm text-muted-foreground leading-relaxed max-w-[270px]">
+                  <p className="text-sm text-white leading-relaxed max-w-[270px]">
                     {step.description}
                   </p>
                 </div>
               </div>
               {index < processSteps.length - 1 && (
                 <div className="flex  pt-12 px-4 flex-1 ">
-                  <div className="h-1.5 w-full bg-[#35445C]" />
+                  <div className="h-1.5 w-full bg-[#f0f0f0]" />
                 </div>
               )}
             </div>
@@ -108,14 +108,14 @@ export default function Process() {
               </h3>
 
               {/* Description */}
-              <p className="text-sm text-muted-foreground leading-relaxed text-center max-w-sm">
+              <p className="text-sm text-white leading-relaxed text-center max-w-sm">
                 {step.description}
               </p>
 
               {/* Connecting Line (not after last step) */}
               {index < processSteps.length - 1 && (
                 <div className="flex items-center pt-12 px-4">
-                  <div className="h-20 w-1.5 bg-[#35445C]" />
+                  <div className="h-20 w-1.5 bg-[#f0f0f0]" />
                 </div>
               )}
             </div>
