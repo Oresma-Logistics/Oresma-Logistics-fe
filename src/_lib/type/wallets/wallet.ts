@@ -13,7 +13,10 @@ export type SingleWallet = {
 
 export interface Wallet {
   _id: string;
-  userId: string;
+  userId: {
+    email: string;
+    _id: string;
+  };
   balance: 0;
   currency: "NGN" | "USD";
   status: string;

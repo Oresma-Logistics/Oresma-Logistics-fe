@@ -4,7 +4,10 @@ export interface Transaction {
   type: string;
   title: string;
   description: string;
-  userId: string;
+  userId: {
+    email: string;
+    _id: string;
+  };
   rideRequestId: string;
   amount: number;
   currency: string;
