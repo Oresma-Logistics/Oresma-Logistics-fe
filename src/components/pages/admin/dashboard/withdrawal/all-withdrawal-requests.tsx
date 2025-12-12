@@ -59,7 +59,7 @@ export function AdminWithdrawalRequests() {
           { label: "Transaction Title", key: "title" },
           { label: " Type", key: "type" },
           { label: " Reference", key: "reference" },
-          { label: " User ID", key: "userId" },
+          { label: " User email", key: "userId.email" },
           { label: "Amount", key: "amount" },
           { label: "Currency", key: "currency" },
           {
