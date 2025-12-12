@@ -8,7 +8,7 @@ export type Wallets = {
 export type SingleWallet = {
   success: false;
   message: string;
-  wallet: Wallet;
+  wallet: singleWallet;
 };
 
 export interface Wallet {
@@ -17,6 +17,16 @@ export interface Wallet {
     email: string;
     _id: string;
   };
+  balance: 0;
+  currency: "NGN" | "USD";
+  status: string;
+  isPinSet: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface singleWallet {
+  _id: string;
+  userId: string;
   balance: 0;
   currency: "NGN" | "USD";
   status: string;
