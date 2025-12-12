@@ -56,7 +56,7 @@ export default function AllRiderWalletPage() {
         <BaseTable
           columns={[
             { key: "_id", label: "Wallet ID", width: "30%" },
-            { key: "userId", label: "User ID", width: "30%" },
+            { key: "userId.email", label: "User Email", width: "30%" },
             {
               key: "balance",
               label: "Balance",

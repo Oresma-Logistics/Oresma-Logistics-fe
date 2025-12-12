@@ -38,7 +38,7 @@ export function AdminTransactionsTable() {
           { label: "Transaction Id", key: "_id" },
           { label: "Transaction Title", key: "title" },
           { label: " Type", key: "type" },
-          { label: " User ID", key: "userId" },
+          { label: " User Email", key: "userId.email" },
           {
             label: "Amount",
             key: "amount",
