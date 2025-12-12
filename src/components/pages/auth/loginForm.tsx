@@ -69,16 +69,18 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md mx-auto shadow-2xl border-border/50 animate-fade-in-up">
       <CardHeader className="space-y-1">
-        <div className="flex lg:hidden items-center gap-2 mb-4">
-          <div className="w-10 h-10  rounded-lg flex items-center justify-center relative">
-            <Image src={"/logo.svg"} alt="Oresema Logo" fill />
+        <Link href={"/"}>
+          <div className="flex lg:hidden items-center gap-2 mb-4">
+            <div className="w-10 h-10  rounded-lg flex items-center justify-center relative">
+              <Image src={"/logo.svg"} alt="Oresema Logo" fill />
+            </div>
+            <span className="text-2xl font-bold text-foreground">Oresma</span>
           </div>
-          <span className="text-2xl font-bold text-foreground">Oresma</span>
-        </div>
+        </Link>
         <CardTitle className="text-3xl font-bold text-secondaryT text-center">
           Sign in
         </CardTitle>
-        <CardDescription className="text-base text-muted-foreground text-center">
+        <CardDescription className="text-base text-primaryT text-center">
           Enter your credentials to access your account
         </CardDescription>
       </CardHeader>
@@ -112,7 +114,7 @@ export function LoginForm() {
               "Sign in"
             )}
           </Button>
-          <div className="text-center text-sm text-muted-foreground">
+          <div className="text-center text-sm text-primaryT">
             Don&apos;t have an account?{" "}
             <Link
               href="/auth/register"

@@ -42,11 +42,13 @@ export function Team() {
               className="object-cover animate-zoom-in rounded-tl-[96px] rounded-br-[96px]"
             />
             <div className="absolute z-2 -bottom-1 -left-1 w-full h-auto  flex justify-center">
-              <div className="py-2 px-9 flex flex-col gap-1 bg-[#F0F4FA] rounded-md items-center">
+              <div className="py-2 px-9 flex flex-col gap-1 bg-primaryT rounded-md items-center">
                 <h2 className="font-semibold text-lg text-center">
                   {individual.name}
                 </h2>
-                <p className="text-xs font-normal">{individual.title}</p>
+                <p className="text-xs font-normal text-white">
+                  {individual.title}
+                </p>
               </div>
             </div>
           </div>

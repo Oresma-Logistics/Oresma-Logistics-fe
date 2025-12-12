@@ -20,7 +20,7 @@ export default function AboutUs() {
           <div>
             <SubHeader title="About Us" />
           </div>
-          <p className="mt-5 text-base text-primaryT max-w-[540px] font-normal md:text-start text-center">
+          <p className="mt-5 text-base text-white max-w-[540px] font-normal md:text-start text-center">
             Chongqing Zeta Supply Chain Co., Ltd. Since 2006, we have been
             deeply involved in the field of Chinese automobile exports,
             authorized by the Chinese government to promote and sell high
