@@ -32,11 +32,11 @@ export default function Services() {
             />
             <div>
               <h4 className="font-semibold text-base">
-                Lorem ipsum dolor sit amet
+                Professional Dispatch Services
               </h4>
               <p className="text-sm">
                 {" "}
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+                Efficient dispatch coordination to ensure timely deliveries and optimal route planning for all your transportation needs.
               </p>
             </div>
           </div>
@@ -61,11 +61,11 @@ export default function Services() {
             </svg>
             <div className="text-white">
               <h4 className="font-semibold text-base">
-                Lorem ipsum dolor sit amet
+                Fleet Management
               </h4>
               <p className="text-sm">
                 {" "}
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+                Comprehensive management of our professional truck fleet to maintain reliability and operational excellence.
               </p>
             </div>
           </div>
@@ -79,11 +79,11 @@ export default function Services() {
             />
             <div>
               <h4 className="font-semibold text-base">
-                Lorem ipsum dolor sit amet
+                Delivery & Transportation
               </h4>
               <p className="text-sm">
                 {" "}
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+                Safe and secure delivery services with experienced drivers ensuring your cargo reaches its destination on time.
               </p>
             </div>
           </div>
@@ -99,11 +99,11 @@ export default function Services() {
             />
             <div>
               <h4 className="font-semibold text-base">
-                Lorem ipsum dolor sit amet
+                Logistics Coordination
               </h4>
               <p className="text-sm">
                 {" "}
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+                End-to-end logistics solutions connecting businesses with reliable transportation partners across the region.
               </p>
             </div>
           </div>
@@ -117,11 +117,11 @@ export default function Services() {
             />
             <div>
               <h4 className="font-semibold text-base">
-                Lorem ipsum dolor sit amet
+                Real-time Tracking
               </h4>
               <p className="text-sm">
                 {" "}
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+                Advanced tracking systems to monitor your shipments in real-time, providing complete visibility and peace of mind. 
               </p>
             </div>
           </div>

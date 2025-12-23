@@ -1,9 +1,7 @@
 import { Phone, Mail, MapPin } from "lucide-react";
 import {
   FaFacebook,
-  FaTwitter,
-  FaInstagram,
-  FaYoutube,
+  FaTiktok,
   FaLinkedin,
 } from "react-icons/fa";
 import Link from "next/link";
@@ -13,7 +11,7 @@ const ContactData = [
     id: 1,
     bg: "bg-[#35445C]",
     icon: Phone,
-    title: "+234810 854 5892",
+    title: ["+234810 854 5892", "+2348131071716", "+234803 290 4556"],
     description: "Give us a call",
   },
   {
@@ -65,7 +63,15 @@ export default function Footer() {
                 />
                 <div className="flex flex-col gap-2 md:gap-3 min-w-0">
                   <h2 className="font-semibold text-base md:text-lg break-words">
-                    {data.title}
+                    {Array.isArray(data.title) ? (
+                      <div className="flex flex-col gap-1">
+                        {data.title.map((item, index) => (
+                          <span key={index}>{item}</span>
+                        ))}
+                      </div>
+                    ) : (
+                      data.title
+                    )}
                   </h2>
                   <p className="font-normal text-xs md:text-sm">
                     {data.description}
@@ -82,42 +88,31 @@ export default function Footer() {
               Oresma Logistics
             </h2>
             <p className="text-base md:text-lg font-normal sm:max-w-[550px] lg:text-start text-center">
-              Zeta Supply Chain Management Co., Ltd. - Your trusted partner in
-              Chinese automobile exports since 2006
+              Your trusted logistics partner specializing in trucking and dispatch
+              delivery services since 2006
             </p>
             <div className="flex gap-4 md:gap-6 flex-wrap">
               <Link
-                href={"/"}
+                href="https://www.facebook.com/share/16cMmUyvBW/"
                 className="bg-white py-0.5 px-1.5 rounded-full h-10 w-10 md:h-[50px] md:w-[50px] flex justify-center items-center hover:scale-110 transition-transform"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <FaFacebook color="#f75720" className="w-5 h-5 md:w-6 md:h-6" />
               </Link>
               <Link
-                href={"/"}
+                href="https://www.tiktok.com/@oresma.logistics"
                 className="bg-white py-0.5 px-1.5 rounded-full h-10 w-10 md:h-[50px] md:w-[50px] flex justify-center items-center hover:scale-110 transition-transform"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <FaTwitter color="#f75720" className="w-5 h-5 md:w-6 md:h-6" />
+                <FaTiktok color="#f75720" className="w-5 h-5 md:w-6 md:h-6" />
               </Link>
               <Link
-                href={"/"}
+                href="https://www.linkedin.com/in/oresma-logistic-78324a393?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"
                 className="bg-white py-0.5 px-1.5 rounded-full h-10 w-10 md:h-[50px] md:w-[50px] flex justify-center items-center hover:scale-110 transition-transform"
-              >
-                <FaInstagram
-                  color="#f75720"
-                  className="w-5 h-5 md:w-6 md:h-6"
-                />
-              </Link>
-              <Link
-                href={"/"}
-                className="bg-white py-0.5 px-1.5 rounded-full h-10 w-10 md:h-[50px] md:w-[50px] flex justify-center items-center hover:scale-110 transition-transform"
-              >
-                <FaYoutube color="#f75720" className="w-5 h-5 md:w-6 md:h-6" />
-              </Link>
-              <Link
-                href={
-                  "https://www.linkedin.com/in/oresma-logistic-78324a393?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"
-                }
-                className="bg-white py-0.5 px-1.5 rounded-full h-10 w-10 md:h-[50px] md:w-[50px] flex justify-center items-center hover:scale-110 transition-transform"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <FaLinkedin color="#f75720" className="w-5 h-5 md:w-6 md:h-6" />
               </Link>
@@ -164,8 +159,9 @@ export default function Footer() {
                 Newsletter
               </h2>
               <p className="text-base md:text-lg sm:max-w-[550px] lg:text-start text-center ">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                Curabitur a gravida velit. Cras vehicula
+                  Stay updated with the latest logistics solutions, delivery
+                  services, and transportation insights. Subscribe to our
+                  newsletter for exclusive updates.
               </p>
             </div>
             <FooterForm />

@@ -12,12 +12,13 @@ export default function CaseStudy() {
           <div className="flex-1 flex items-center sm:justify-start justify-center md:py-5">
             <div>
               <h2 className="font-semibold text-[1.75rem] text-primaryT sm:text-start text-center">
-                AI-Based Search Prompts
+                Our Mission
               </h2>
               <p className="mt-7 font-normal text-lg text-primaryT max-w-[370px] max-sm:text-center">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                Curabitur a gravida velit. Cras vehicula sodalesIn porttitor
-                iaculis dolor non aliquet.
+                To empower businesses with reliable, efficient trucking and dispatch
+                delivery solutions that connect communities and drive commerce forward.
+                We are committed to excellence, safety, and building lasting partnerships
+                through dependable logistics services.
               </p>
               <div className="flex sm:justify-start justify-center">
                 <Button className="mt-10 border-t-4 border-secondaryT py-4 text-primaryT font-normal text-sm bg-transparent rounded-none">

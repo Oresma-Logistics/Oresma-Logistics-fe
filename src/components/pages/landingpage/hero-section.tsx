@@ -59,13 +59,13 @@ export function HeroSection() {
                 Oresma Logistics
               </h1>
               <p
-                className="text-base md:text-lg text-white/90 mb-8 leading-relaxed animate-fade-in-up max-md:text-center"
+                className="text-base md:text-lg text-white font-semibold mb-8 leading-relaxed animate-fade-in-up max-md:text-center"
                 style={{ animationDelay: "0.2s" }}
               >
-                Your trusted partner in Chinese automobile exports since 2006.
-                We offer high-quality vehicles with the most competitive prices,
-                connecting global distribution partners with premium automotive
-                solutions.
+                Your trusted logistics partner specializing in trucking and dispatch
+                delivery since 2006. We connect businesses with reliable transportation
+                solutions, ensuring timely deliveries with our fleet of professional
+                trucks and dedicated dispatch services.
               </p>
               <div className="flex max-md:justify-center">
                 <Button
