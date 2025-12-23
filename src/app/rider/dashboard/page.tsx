@@ -33,36 +33,36 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 grid-rows-2 gap-6">
           <StatCard
             percentage
-            value={45.6}
+            value={0}
             label="Order rate"
-            trend="+25%"
+            trend=""
             trendDirection="up"
             icon={<Menu className="w-5 h-5" />}
             gradient="organge"
           />
           <StatCard
             percentage
-            value={45.6}
+            value={0}
             label="Order rate"
-            trend="+25%"
+            trend=""
             trendDirection="up"
             icon={<CalendarArrowDown className="w-5 h-5" />}
             gradient="organge"
           />
           <StatCard
             percentage
-            value={45.6}
+            value={0}
             label="Order rate"
-            trend="+25%"
+            trend=""
             trendDirection="up"
             icon={<CalendarArrowDown className="w-5 h-5" />}
             gradient="organge"
           />
           <StatCard
-            value={45.6}
+            value={0}
             percentage
             label="Order rate"
-            trend="+25%"
+            trend=""
             trendDirection="up"
             icon={<CalendarArrowDown className="w-5 h-5" />}
             gradient="organge"

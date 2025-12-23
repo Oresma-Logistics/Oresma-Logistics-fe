@@ -25,7 +25,7 @@ export function Navbar() {
     { name: "SERVICES", href: "#services" },
     { name: "TEAM", href: "#team" },
     { name: "PROCESS", href: "#process" },
-    { name: "CONTACT", href: "#contact" },
+    { name: "BECOME A RIDER", href: "/auth/rider-signup" },
   ];
 
   return (
@@ -53,16 +53,27 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-sm font-medium text-white hover:text-primaryT transition-all duration-300 relative group"
-              >
-                {link.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
-              </a>
-            ))}
+            {navLinks.map((link) =>
+              link.href.startsWith("#") ? (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className="text-sm font-medium text-white hover:text-primaryT transition-all duration-300 relative group"
+                >
+                  {link.name}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
+                </a>
+              ) : (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="text-sm font-medium text-white hover:text-primaryT transition-all duration-300 relative group"
+                >
+                  {link.name}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
+                </Link>
+              )
+            )}
           </div>
 
           {/* CTA Button - Desktop */}
@@ -97,16 +108,27 @@ export function Navbar() {
           className="lg:hidden bg-primaryT border-t border-border animate-slide-down"
         >
           <div className="px-4 pt-2 pb-4 space-y-2">
-            {navLinks.map((link, index) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="block px-3 py-2 text-sm font-medium text-white hover:text-primaryT hover:bg-accent rounded-md transition-all duration-300 hover:translate-x-2 animate-fade-in-up"
-                onClick={() => setIsOpen(false)}
-              >
-                {link.name}
-              </a>
-            ))}
+            {navLinks.map((link, index) =>
+              link.href.startsWith("#") ? (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className="block px-3 py-2 text-sm font-medium text-white hover:text-primaryT hover:bg-accent rounded-md transition-all duration-300 hover:translate-x-2 animate-fade-in-up"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {link.name}
+                </a>
+              ) : (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="block px-3 py-2 text-sm font-medium text-white hover:text-primaryT hover:bg-accent rounded-md transition-all duration-300 hover:translate-x-2 animate-fade-in-up"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {link.name}
+                </Link>
+              )
+            )}
             <div className="pt-2">
               <Button
                 className="w-full bg-[#F75720] hover:bg-[#F75720]/90 text-primary-foreground hover:scale-105 transition-transform duration-300 rounded-tl-3xl rounded-br-3xl"
