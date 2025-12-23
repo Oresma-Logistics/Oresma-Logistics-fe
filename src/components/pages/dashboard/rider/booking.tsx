@@ -35,7 +35,7 @@ const vehicles = [
     image:
       "https://res.cloudinary.com/duyhha3mz/image/upload/v1760319037/keke_mngdxu.png",
     price: "₦800",
-    available: false,
+    available: true,
   },
   {
     id: "lorry",
