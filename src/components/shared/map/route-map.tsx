@@ -1,15 +1,20 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import {
-  GoogleMap,
-  DirectionsRenderer,
-  Marker,
-  useJsApiLoader,
-} from "@react-google-maps/api";
+import { useState, useEffect, useRef } from "react";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Plus } from "lucide-react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix for default marker icons in Next.js
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+});
 
 interface RouteMapProps {
   origin: string;
@@ -20,18 +25,29 @@ interface RouteMapProps {
   isLoading?: boolean;
 }
 
-// ✅ Move libraries constant outside to prevent reload warnings
-const libraries: "places"[] = ["places"];
+interface RouteResult {
+  coordinates: [number, number][];
+  duration: string;
+  distance: string;
+  originCoords: [number, number];
+  destCoords: [number, number];
+}
 
-const mapContainerStyle = {
-  width: "100%",
-  height: "100%",
-};
+const defaultCenter: [number, number] = [6.5244, 3.3792];
 
-const defaultCenter = {
-  lat: 6.5244,
-  lng: 3.3792,
-};
+// Component to fit map bounds to route
+function MapBounds({ coordinates }: { coordinates: [number, number][] }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (coordinates.length > 0) {
+      const bounds = L.latLngBounds(coordinates);
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [coordinates, map]);
+  
+  return null;
+}
 
 export function RouteMap({
   origin,
@@ -41,119 +57,148 @@ export function RouteMap({
   shouldCalculate = false,
   isLoading = false,
 }: RouteMapProps) {
-  const [directions, setDirections] =
-    useState<google.maps.DirectionsResult | null>(null);
+  const [route, setRoute] = useState<RouteResult | null>(null);
   const [internalLoading, setInternalLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [duration, setDuration] = useState<string>("");
   const [hasCalculated, setHasCalculated] = useState(false);
+  const lastRequestTime = useRef<number>(0);
 
-  // ✅ Use the stable libraries constant
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-    libraries,
-  });
+  // Geocode addresses to coordinates
+  const geocodeAddress = async (address: string): Promise<[number, number] | null> => {
+    if (!address || address.trim().length === 0) {
+      console.warn("Empty address provided for geocoding");
+      return null;
+    }
 
-  const mapOptions: google.maps.MapOptions = {
-    disableDefaultUI: true,
-    zoomControl: false,
-    scrollwheel: false,
-    disableDoubleClickZoom: true,
-    draggable: false,
-    gestureHandling: "none",
-    keyboardShortcuts: false,
-    styles: [
-      {
-        featureType: "all",
-        elementType: "geometry",
-        stylers: [{ color: "#d4f1e8" }],
-      },
-      {
-        featureType: "water",
-        elementType: "geometry",
-        stylers: [{ color: "#a8ddd1" }],
-      },
-      {
-        featureType: "poi",
-        elementType: "labels",
-        stylers: [{ visibility: "off" }],
-      },
-      {
-        featureType: "road",
-        elementType: "geometry",
-        stylers: [{ color: "#ffffff" }],
-      },
-    ],
+    try {
+      // Respect Nominatim rate limits (1 request per second)
+      const now = Date.now();
+      const timeSinceLastRequest = now - lastRequestTime.current;
+      if (timeSinceLastRequest < 1000) {
+        await new Promise(resolve => setTimeout(resolve, 1000 - timeSinceLastRequest));
+      }
+      lastRequestTime.current = Date.now();
+      
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address.trim())}&limit=1&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'Oresma-Logistics-App/1.0',
+            'Accept': 'application/json'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        console.error(`Geocoding failed with status ${response.status}: ${response.statusText}`);
+        return null;
+      }
+
+      const data = await response.json();
+      
+      if (!Array.isArray(data) || data.length === 0) {
+        console.warn(`No results found for address: ${address}`);
+        return null;
+      }
+
+      const result = data[0];
+      const lat = parseFloat(result.lat);
+      const lon = parseFloat(result.lon);
+
+      if (isNaN(lat) || isNaN(lon)) {
+        console.error(`Invalid coordinates returned for address: ${address}`, result);
+        return null;
+      }
+
+      return [lat, lon];
+    } catch (error) {
+      console.error("Geocoding error for address:", address, error);
+      return null;
+    }
   };
 
-  const calculateRoute = useCallback(async () => {
-    if (!isLoaded || !origin || !destination) return;
-    if (!window.google || !window.google.maps) return;
+  // Calculate route using OSRM
+  const calculateRoute = async () => {
+    if (!origin || !destination) {
+      setError("Please provide both origin and destination addresses");
+      return;
+    }
+
+    if (!origin.trim() || !destination.trim()) {
+      setError("Addresses cannot be empty");
+      return;
+    }
 
     setInternalLoading(true);
     setError(null);
 
     try {
-      const directionsService = new window.google.maps.DirectionsService();
-
-      const result = await new Promise<google.maps.DirectionsResult>(
-        (resolve, reject) => {
-          directionsService.route(
-            {
-              origin,
-              destination,
-              travelMode: window.google.maps.TravelMode.DRIVING,
-            },
-            (response, status) => {
-              if (
-                status === window.google.maps.DirectionsStatus.OK &&
-                response
-              ) {
-                resolve(response);
-              } else {
-                reject(new Error(`Directions request failed: ${status}`));
-              }
-            }
-          );
-        }
-      );
-
-      setDirections(result);
-      setHasCalculated(true);
-
-      if (result.routes[0]?.legs[0]) {
-        const leg = result.routes[0].legs[0];
-        const durationText = leg.duration?.text || "";
-        const distance = leg.distance?.text || "";
-
-        setDuration(durationText);
-        localStorage.setItem("destination", destination);
-        onRouteCalculated?.(durationText, distance);
+      // Geocode addresses sequentially to respect rate limits
+      const originCoords = await geocodeAddress(origin);
+      if (!originCoords) {
+        throw new Error(`Could not geocode origin address: "${origin}"`);
       }
+
+      const destCoords = await geocodeAddress(destination);
+      if (!destCoords) {
+        throw new Error(`Could not geocode destination address: "${destination}"`);
+      }
+
+      // Get route from OSRM (format: lon,lat;lon,lat)
+      const response = await fetch(
+        `https://router.project-osrm.org/route/v1/driving/${originCoords[1]},${originCoords[0]};${destCoords[1]},${destCoords[0]}?overview=full&geometries=geojson`
+      );
+      const data = await response.json();
+
+      if (data.code !== "Ok" || !data.routes || data.routes.length === 0) {
+        throw new Error("Could not calculate route");
+      }
+
+      const routeData = data.routes[0];
+      // Convert GeoJSON coordinates [lon, lat] to Leaflet format [lat, lon]
+      const coordinates = routeData.geometry.coordinates.map((coord: [number, number]) => [
+        coord[1],
+        coord[0],
+      ]) as [number, number][];
+
+      // Format duration and distance
+      const durationSeconds = Math.round(routeData.duration);
+      const durationMinutes = Math.round(durationSeconds / 60);
+      const durationText = durationMinutes > 60 
+        ? `${Math.floor(durationMinutes / 60)}h ${durationMinutes % 60}m`
+        : `${durationMinutes}m`;
+
+      const distanceKm = (routeData.distance / 1000).toFixed(1);
+      const distanceText = `${distanceKm} km`;
+
+      const routeResult: RouteResult = {
+        coordinates,
+        duration: durationText,
+        distance: distanceText,
+        originCoords,
+        destCoords,
+      };
+
+      setRoute(routeResult);
+      setHasCalculated(true);
+      localStorage.setItem("destination", destination);
+      onRouteCalculated?.(durationText, distanceText);
     } catch (err) {
       console.error("Error calculating route:", err);
       setError("Unable to calculate route. Please check your locations.");
     } finally {
       setInternalLoading(false);
     }
-  }, [isLoaded, origin, destination, onRouteCalculated]);
+  };
 
   useEffect(() => {
     if (shouldCalculate && !hasCalculated && !internalLoading) {
       calculateRoute();
     }
-  }, [shouldCalculate, hasCalculated, internalLoading, calculateRoute]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldCalculate, hasCalculated, internalLoading]);
 
   const isSearching = isLoading || internalLoading;
-
-  // 🌀 Loading placeholder
-  if (!isLoaded) {
-    return (
-      <Card className="flex items-center justify-center bg-muted/30 h-full">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      </Card>
-    );
-  }
 
   if (!origin || !destination) {
     return (
@@ -195,102 +240,75 @@ export function RouteMap({
         </div>
       )}
 
-      {/* ✅ Ensure a stable container element exists before rendering the map */}
-      <div style={{ width: "100%", height: "400px" }}>
-        {isLoaded && (
-          <GoogleMap
-            mapContainerStyle={mapContainerStyle}
-            center={defaultCenter}
-            zoom={11}
-            options={mapOptions}
-          >
-            {directions && (
-              <>
-                <DirectionsRenderer
-                  directions={directions}
-                  options={{
-                    polylineOptions: {
-                      strokeColor: "#ff6347",
-                      strokeWeight: 6,
-                      strokeOpacity: 0.9,
-                    },
-                    suppressMarkers: true,
-                  }}
-                />
+      {route && (
+        <>
+          <div style={{ width: "100%", height: "400px" }}>
+            <MapContainer
+              center={route.originCoords}
+              zoom={13}
+              style={{ height: "100%", width: "100%" }}
+              scrollWheelZoom={false}
+              zoomControl={false}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <MapBounds coordinates={route.coordinates} />
+              <Polyline
+                positions={route.coordinates}
+                pathOptions={{ color: "#ff6347", weight: 6, opacity: 0.9 }}
+              />
+              <Marker position={route.originCoords}>
+                <Popup>{origin}</Popup>
+              </Marker>
+              <Marker position={route.destCoords}>
+                <Popup>{destination}</Popup>
+              </Marker>
+            </MapContainer>
+          </div>
 
-                {directions.routes[0]?.legs[0] && (
-                  <>
-                    <Marker
-                      position={directions.routes[0].legs[0].start_location}
-                      icon={{
-                        path: window.google.maps.SymbolPath.CIRCLE,
-                        scale: 10,
-                        fillColor: "#fbbf24",
-                        fillOpacity: 1,
-                        strokeColor: "#ffffff",
-                        strokeWeight: 3,
-                      }}
-                    />
-                    <Marker
-                      position={directions.routes[0].legs[0].end_location}
-                      icon={{
-                        path: window.google.maps.SymbolPath.CIRCLE,
-                        scale: 10,
-                        fillColor: "#000000",
-                        fillOpacity: 1,
-                        strokeColor: "#ffffff",
-                        strokeWeight: 3,
-                      }}
-                    />
-                  </>
-                )}
-              </>
-            )}
-          </GoogleMap>
-        )}
-      </div>
-
-      {directions && (
-        <div className="absolute left-4 right-4 top-4 z-20">
-          <Card className="bg-white/95 p-4 shadow-lg backdrop-blur-sm">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-yellow-400" />
-                  <span className="text-sm font-medium">{origin}</span>
+          <div className="absolute left-4 right-4 top-4 z-20">
+            <Card className="bg-white/95 p-4 shadow-lg backdrop-blur-sm">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-yellow-400" />
+                    <span className="text-sm font-medium">{origin}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-black" />
+                    <span className="text-sm font-medium">{destination}</span>
+                    {route.duration && (
+                      <span className="ml-auto text-sm text-orange-600">
+                        - {route.duration}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-black" />
-                  <span className="text-sm font-medium">{destination}</span>
-                  {duration && (
-                    <span className="ml-auto text-sm text-orange-600">
-                      - {duration}
-                    </span>
-                  )}
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="bg-gray-900 text-white hover:bg-gray-800"
+                  >
+                    Entrance
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8">
+                    <Plus className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  className="bg-gray-900 text-white hover:bg-gray-800"
-                >
-                  Entrance
-                </Button>
-                <Button size="icon" variant="ghost" className="h-8 w-8">
-                  <Plus className="h-4 w-4" />
-                </Button>
+            </Card>
+          </div>
+
+          {route.duration && (
+            <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
+              <div className="rounded-full bg-black px-3 py-1.5 text-sm font-semibold text-white shadow-lg">
+                {route.duration}
               </div>
             </div>
-          </Card>
-        </div>
-      )}
-
-      {directions && duration && (
-        <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
-          <div className="rounded-full bg-black px-3 py-1.5 text-sm font-semibold text-white shadow-lg">
-            {duration}
-          </div>
-        </div>
+          )}
+        </>
       )}
 
       <div className="pointer-events-none absolute inset-0 z-[5]" />
