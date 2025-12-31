@@ -1,9 +1,15 @@
 "use client";
 // import { Card, CardHeader } from "@/components/ui/card";
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 // import { RouteInfo } from "../../map/route-info";
-import { RouteMap } from "../../map/route-map";
 // import { Clock } from "lucide-react";
+
+// Dynamically import RouteMap to avoid SSR issues with Leaflet
+const RouteMap = dynamic(
+  () => import("../../map/route-map").then((mod) => ({ default: mod.RouteMap })),
+  { ssr: false }
+);
 
 export default function MapRoute({
   origin,

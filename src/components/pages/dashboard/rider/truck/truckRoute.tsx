@@ -2,9 +2,15 @@
 import { LocationInput } from "@/components/shared/map/location-input";
 import { Card } from "@/components/ui/card";
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { RouteInfo } from "@/components/shared/map/route-info";
-import { RouteMap } from "@/components/shared/map/route-map";
 import { Button } from "@/components/ui/button";
+
+// Dynamically import RouteMap to avoid SSR issues with Leaflet
+const RouteMap = dynamic(
+  () => import("@/components/shared/map/route-map").then((mod) => ({ default: mod.RouteMap })),
+  { ssr: false }
+);
 import { TruckProcesing } from "./truckProcessing";
 import Cookies from "js-cookie";
 import { Edit2, X } from "lucide-react";
