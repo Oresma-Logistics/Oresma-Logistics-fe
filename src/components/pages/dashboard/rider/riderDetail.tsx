@@ -23,6 +23,7 @@ interface DriverDetailsModalProps {
     price?: number;
     estimatedTime?: number;
     distanceKm?: number;
+    plateNumber?: string;
   };
 }
 
@@ -100,6 +101,14 @@ export function DriverDetailsModal({
                 <span className="text-xs text-gray-500">/mins</span>
               </p>
             </div>
+          </div>
+
+          {/* Plate Number Card */}
+          <div className="bg-gray-50 rounded-2xl p-4 w-full text-center">
+            <p className="text-xs text-gray-500 mb-1">Plate Number</p>
+            <p className="text-lg font-semibold text-gray-900">
+              {driver.plateNumber || "ABC-123-XY"}
+            </p>
           </div>
 
           {/* Call Button */}

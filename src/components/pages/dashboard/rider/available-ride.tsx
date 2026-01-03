@@ -18,6 +18,7 @@ const driversData = [
     vehicleType: "Camry",
     vehicleImage: "/blue-sedan.png",
     passengers: 4,
+    plateNumber: "ABC-123-XY",
   },
   {
     id: 2,
@@ -30,6 +31,7 @@ const driversData = [
     vehicleType: "Sedan",
     vehicleImage: "/silver-honda-civic.png",
     passengers: 4,
+    plateNumber: "XYZ-456-AB",
   },
   {
     id: 3,
@@ -42,6 +44,7 @@ const driversData = [
     vehicleType: "White",
     vehicleImage: "/white-toyota-corolla.png",
     passengers: 4,
+    plateNumber: "DEF-789-GH",
   },
   {
     id: 4,
@@ -54,6 +57,7 @@ const driversData = [
     vehicleType: "Black",
     vehicleImage: "/black-lexus-sedan.jpg",
     passengers: 4,
+    plateNumber: "GHI-012-JK",
   },
 ];
 
@@ -91,6 +95,7 @@ interface RiderCardProps {
     vehicleType: string;
     vehicleImage: string;
     passengers: number;
+    plateNumber?: string;
   };
 }
 
