@@ -14,19 +14,22 @@ import { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 import RiderSignupModal from "./create-rider-form";
-import { UsersResponse } from "@/_lib/type/auth/users";
+import { RiderDetailsModal } from "./rider-details-modal";
+import { RidersResponse, Rider } from "@/_lib/type/auth/users";
 import { getallRider } from "@/_lib/api/admin/users/user";
 import { useQuery } from "@tanstack/react-query";
 import SkeletonCardList from "@/components/shared/skeleton/card-list-skeleton";
 
 export function AllRidersTable() {
   const [openRegisterModal, setOpenRegisterModal] = useState<boolean>(false);
+  const [selectedRider, setSelectedRider] = useState<Rider | null>(null);
+  const [openDetailsModal, setOpenDetailsModal] = useState<boolean>(false);
   const {
     data: Riders,
     isPending,
     isError,
     error: Error,
-  } = useQuery<UsersResponse>({
+  } = useQuery<RidersResponse>({
     queryFn: getallRider,
     queryKey: ["AllRiders"],
     refetchInterval: 60 * 1000, // 1 minutes
@@ -94,24 +97,43 @@ export function AllRidersTable() {
       {!isPending && Riders?.count === 0 && (
         <div className="text-red-500">No Rider User</div>
       )}
-      {!isPending && !Error && Riders.count > 0 && (
+      {!isPending && !Error && Riders && Riders.count > 0 && (
         <BaseTable
           columns={[
-            { key: "name", label: "Name" },
-            // { key: "id", label: "User ID" },
-            { key: "email", label: "Email" },
-            { key: "phone", label: "Phone" },
-            { key: "role", label: "Role" },
+            { 
+              key: "name", 
+              label: "Name",
+              render: (_, rider) => rider.userId?.name || "N/A"
+            },
+            { 
+              key: "email", 
+              label: "Email",
+              render: (_, rider) => rider.userId?.email || "N/A"
+            },
+            { 
+              key: "phone", 
+              label: "Phone",
+              render: (_, rider) => rider.userId?.phone || "N/A"
+            },
+            { 
+              key: "role", 
+              label: "Role",
+              render: (_, rider) => rider.userId?.role || "rider"
+            },
             {
               key: "createdAt",
               label: "Date Created",
               render: (value) => new Date(value).toLocaleDateString(),
             },
           ]}
-          data={Riders.users}
+          data={Riders.riders}
           showCountBadge={true}
           count={Riders.count}
           rowActions2={RowActions}
+          onRowClick={(rider) => {
+            setSelectedRider(rider);
+            setOpenDetailsModal(true);
+          }}
         />
       )}
       <RiderSignupModal
@@ -119,6 +141,11 @@ export function AllRidersTable() {
         onClose={() => {
           setOpenRegisterModal(false);
         }}
+      />
+      <RiderDetailsModal
+        open={openDetailsModal}
+        onOpenChange={setOpenDetailsModal}
+        rider={selectedRider}
       />
     </div>
   );

@@ -9,7 +9,7 @@ export async function getallCustomer() {
   return response.data;
 }
 export async function getallRider() {
-  const response = await axiosInstance2.get("/admin/users/role/rider");
+  const response = await axiosInstance2.get("/riders");
   return response.data;
 }
 export async function getallAdmin() {
