@@ -10,7 +10,7 @@ interface DriverDetailsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   driver: {
-    id: number;
+    id: number | string;
     driverName: string;
     driverImage: string;
     distance: string;

@@ -37,7 +37,7 @@ const vehicles = [
   },
   {
     id: "keke",
-    name: "Keke",
+    name: "Bike",
     image:
       "https://res.cloudinary.com/duyhha3mz/image/upload/v1760319037/keke_mngdxu.png",
     price: "₦800",

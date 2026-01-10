@@ -5,6 +5,10 @@ import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Star } from "lucide-react";
 import { DriverDetailsModal } from "./riderDetail";
+import { useQuery } from "@tanstack/react-query";
+import { getMotorcycleRiders } from "@/_lib/api/auth/motorcycle-riders";
+import { MotorcycleRidersResponse } from "@/_lib/type/auth/motorcycle-riders";
+import SkeletonCardList from "@/components/shared/skeleton/card-list-skeleton";
 
 const driversData = [
   {
@@ -63,10 +67,46 @@ const driversData = [
 
 export function AvailableRide() {
   const params = useSearchParams();
+  const vehicle = params.get("vehicle");
 
-  if (!params.get("vehicle") || params.get("vehicle") === "lorry") {
+  // Fetch motorcycle riders when keke is selected
+  const {
+    data: motorcycleRidersData,
+    isLoading: isLoadingMotorcycleRiders,
+    isError: isMotorcycleRidersError,
+  } = useQuery<MotorcycleRidersResponse>({
+    queryKey: ["motorcycleRiders"],
+    queryFn: getMotorcycleRiders,
+    enabled: vehicle === "keke",
+  });
+
+  if (!vehicle || vehicle === "lorry") {
     return null;
   }
+
+  // Transform motorcycle riders to driver format
+  const motorcycleDrivers =
+    vehicle === "keke" && motorcycleRidersData
+      ? motorcycleRidersData.riders.map((rider, index) => ({
+          id: rider.id,
+          driverName: rider.user?.name || "Unnamed Rider",
+          driverImage: "/placeholder.svg",
+          distance: `${Math.floor(Math.random() * 10) + 1} min away`, // Mock distance
+          rating: 4, // Default rating since API doesn't provide it
+          totalRides: 0, // Default rides since API doesn't provide it
+          vehicleName: "Motorcycle",
+          vehicleType: rider.vehicleInfo.vehicleType,
+          vehicleImage:
+            "https://res.cloudinary.com/duyhha3mz/image/upload/v1760319037/keke_mngdxu.png",
+          passengers: 1,
+          plateNumber: undefined,
+          riderData: rider, // Keep original rider data for reference
+        }))
+      : [];
+
+  // Use motorcycle drivers if keke is selected, otherwise use hardcoded data
+  const displayDrivers =
+    vehicle === "keke" ? motorcycleDrivers : driversData;
 
   return (
     <div className="w-full lg:max-w-[420px] min-w-[320px] bg-[#F8F9FC] rounded-3xl py-6 px-5 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent max-h-[calc(100%-250px)]">
@@ -74,18 +114,43 @@ export function AvailableRide() {
         Drivers near you
       </h3>
 
-      <div className="grid grid-cols-1 gap-6 ] ">
-        {driversData.map((driver) => (
-          <RiderCard key={driver.id} driver={driver} />
-        ))}
-      </div>
+      {vehicle === "keke" && isLoadingMotorcycleRiders && (
+        <div className="space-y-4">
+          <div className="h-20 w-full animate-pulse rounded-lg bg-muted" />
+          <div className="h-20 w-full animate-pulse rounded-lg bg-muted" />
+          <div className="h-20 w-full animate-pulse rounded-lg bg-muted" />
+        </div>
+      )}
+
+      {vehicle === "keke" && isMotorcycleRidersError && (
+        <div className="text-red-500 text-sm">
+          Error loading motorcycle riders
+        </div>
+      )}
+
+      {vehicle === "keke" &&
+        !isLoadingMotorcycleRiders &&
+        !isMotorcycleRidersError &&
+        motorcycleRidersData?.count === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            No motorcycle riders available at the moment.
+          </div>
+        )}
+
+      {displayDrivers.length > 0 && (
+        <div className="grid grid-cols-1 gap-6">
+          {displayDrivers.map((driver) => (
+            <RiderCard key={driver.id} driver={driver} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 interface RiderCardProps {
   driver: {
-    id: number;
+    id: number | string;
     driverName: string;
     driverImage: string;
     distance: string;
@@ -96,6 +161,7 @@ interface RiderCardProps {
     vehicleImage: string;
     passengers: number;
     plateNumber?: string;
+    riderData?: any; // For motorcycle riders original data
   };
 }
 
@@ -201,7 +267,19 @@ function RiderCard({ driver }: RiderCardProps) {
       <DriverDetailsModal
         open={showDetails}
         onOpenChange={handleCloseModal}
-        driver={driver}
+        driver={{
+          id: driver.id,
+          driverName: driver.driverName,
+          driverImage: driver.driverImage,
+          distance: driver.distance,
+          rating: driver.rating,
+          totalRides: driver.totalRides,
+          vehicleName: driver.vehicleName,
+          vehicleType: driver.vehicleType,
+          vehicleImage: driver.vehicleImage,
+          passengers: driver.passengers,
+          plateNumber: driver.plateNumber,
+        }}
       />
     </>
   );
