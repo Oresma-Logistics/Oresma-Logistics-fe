@@ -8,16 +8,25 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 import { X } from "lucide-react";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { SubmitHandler, useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EmailInput } from "@/components/utility/form/email-input";
 import { PasswordInput } from "@/components/utility/form/password-input";
 import { CustomerInput } from "@/components/utility/form/customInput";
-import { useMutation } from "@tanstack/react-query";
-import { SignUp } from "@/_lib/type/auth";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CreateRiderPayload } from "@/_lib/type/auth";
 import { CreateRider } from "@/_lib/api/admin/rider/create-rider";
 import { showToast } from "@/components/shared/toast";
 
@@ -30,7 +39,7 @@ export default function RiderSignupModal({
   isOpen,
   onClose,
 }: RiderSignupModalProps) {
-  type FormData = z.infer<typeof signUpScheme>;
+  const queryClient = useQueryClient();
   const signUpScheme = z.object({
     name: z
       .string()
@@ -48,28 +57,41 @@ export default function RiderSignupModal({
       .string()
       .min(1, "Password is Required")
       .min(7, "Minimum of 8 characters"),
+    vehicleType: z.string().min(1, "Vehicle type is required"),
+    isVendor: z.boolean(),
+  });
+
+  type RiderFormData = z.infer<typeof signUpScheme>;
+
+  const form = useForm<RiderFormData>({
+    resolver: zodResolver(signUpScheme),
+    defaultValues: {
+      vehicleType: "motorcycle",
+      isVendor: false,
+    },
   });
 
   const {
     handleSubmit,
     register,
+    control,
     formState: { errors },
-  } = useForm({
-    resolver: zodResolver(signUpScheme),
-  });
+  } = form;
 
   const mutation = useMutation({
     mutationFn: CreateRider,
     onSuccess: (data) => {
-      showToast.success("Rider Registered Successful", data.messae);
+      showToast.success("Rider Registered Successful", data.message || "Rider created successfully");
+      queryClient.invalidateQueries({ queryKey: ["AllRiders"] });
       onClose();
     },
     onError: (error) => {
-      showToast.error("Registered Failed", error.message);
+      showToast.error("Registration Failed", error.message);
     },
   });
-  const onSubmit: SubmitHandler<FormData> = async (data: SignUp) => {
-    await mutation.mutateAsync(data);
+  
+  const onSubmit = async (data: RiderFormData) => {
+    await mutation.mutateAsync(data as CreateRiderPayload);
   };
   if (!isOpen) return null;
 
@@ -130,21 +152,65 @@ export default function RiderSignupModal({
 
               {/* Password Field */}
               <div className="space-y-2">
-                <div className="hidden">
-                  {" "}
-                  <PasswordInput
-                    inputname="password"
-                    register={register}
-                    label="Passowrd"
-                    defaultValue="user2020"
-                    error={
-                      errors.password ? errors.password.message : undefined
-                    }
-                  />
-                </div>
-                <p className="text-xs text-slate-500">
-                  Default password starts with &quot;user2020&quot;
-                </p>
+                <PasswordInput
+                  inputname="password"
+                  register={register}
+                  label="Password"
+                  error={
+                    errors.password ? errors.password.message : undefined
+                  }
+                />
+              </div>
+
+              {/* Vehicle Type Field */}
+              <div className="space-y-2">
+                <Label htmlFor="vehicleType">Vehicle Type</Label>
+                <Controller
+                  name="vehicleType"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select vehicle type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="motorcycle">Motorcycle</SelectItem>
+                        <SelectItem value="truck">Truck</SelectItem>
+                        <SelectItem value="car">Car</SelectItem>
+                        <SelectItem value="van">Van</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.vehicleType && (
+                  <p className="text-sm text-red-500">
+                    {errors.vehicleType.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Is Vendor Field */}
+              <div className="flex items-center space-x-2">
+                <Controller
+                  name="isVendor"
+                  control={control}
+                  render={({ field }) => (
+                    <Checkbox
+                      id="isVendor"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+                <Label
+                  htmlFor="isVendor"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  Is Vendor
+                </Label>
               </div>
 
               <Button

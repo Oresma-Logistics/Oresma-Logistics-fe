@@ -1,6 +1,7 @@
 import { axiosInstance2 } from "@/_lib/axios";
-import { SignUp } from "@/_lib/type/auth";
-export async function CreateRider(data: SignUp) {
-  const response = await axiosInstance2.post("/auth/signup-rider", data);
+import { CreateRiderPayload } from "@/_lib/type/auth";
+
+export async function CreateRider(data: CreateRiderPayload) {
+  const response = await axiosInstance2.post("/admin/riders", data);
   return response.data;
 }
