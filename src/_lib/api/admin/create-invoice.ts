@@ -3,13 +3,13 @@ import { axiosInstance2 } from "@/_lib/axios";
 export type InvoiceType = {
   currency: string;
   estimatedFare: string;
-  baseFare: string;
-  distanceFare: string;
-  timeFare: string;
-  surgeMultiplier: string;
-  tax: string;
-  serviceFee: string;
-  total: string;
+  baseFare?: string;
+  distanceFare?: string;
+  timeFare?: string;
+  surgeMultiplier?: string;
+  tax?: string;
+  serviceFee?: string;
+  total?: string;
 };
 
 type InvoiceProps = {

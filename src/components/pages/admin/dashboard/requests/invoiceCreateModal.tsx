@@ -14,7 +14,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 // import { Processing, Processnvoice } from "./processing";
 import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
-import { CreateInvoice } from "@/_lib/api/admin/create-invoice";
+import { CreateInvoice, InvoiceType } from "@/_lib/api/admin/create-invoice";
 import { showToast } from "@/components/shared/toast";
 import { LoadingSpinner } from "@/components/shared/loading/loadingSpinner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -28,13 +28,13 @@ export default function CreateInoiveModal({ open, onOpenChange, id }: Props) {
   const InvoiceCreateSchema = z.object({
     currency: z.string().min(1, "Currency is required"),
     estimatedFare: z.string().min(1, "Estimated Fare is required"),
-    baseFare: z.string().min(1, "Base Fare  is required"),
-    distanceFare: z.string().min(1, "Distance Fare  is required"),
-    timeFare: z.string().min(1, "Time Fare  is required"),
-    surgeMultiplier: z.string().min(1, "Surge Multiplier  is required"),
-    tax: z.string().min(1, "Tax is required"),
-    serviceFee: z.string().min(1, "Service Fee is required"),
-    total: z.string().min(1, "Total is required"),
+    baseFare: z.string().optional(),
+    distanceFare: z.string().optional(),
+    timeFare: z.string().optional(),
+    surgeMultiplier: z.string().optional(),
+    tax: z.string().optional(),
+    serviceFee: z.string().optional(),
+    total: z.string().optional(),
   });
   const {
     register,
@@ -58,7 +58,19 @@ export default function CreateInoiveModal({ open, onOpenChange, id }: Props) {
   });
 
   const onSubmit: SubmitHandler<FormSchema> = async (data) => {
-    await mutation.mutateAsync({ data: data, id: id });
+    // Convert empty strings to undefined for optional fields
+    const invoiceData: InvoiceType = {
+      currency: data.currency,
+      estimatedFare: data.estimatedFare,
+      baseFare: data.baseFare && data.baseFare.trim() !== "" ? data.baseFare : undefined,
+      distanceFare: data.distanceFare && data.distanceFare.trim() !== "" ? data.distanceFare : undefined,
+      timeFare: data.timeFare && data.timeFare.trim() !== "" ? data.timeFare : undefined,
+      surgeMultiplier: data.surgeMultiplier && data.surgeMultiplier.trim() !== "" ? data.surgeMultiplier : undefined,
+      tax: data.tax && data.tax.trim() !== "" ? data.tax : undefined,
+      serviceFee: data.serviceFee && data.serviceFee.trim() !== "" ? data.serviceFee : undefined,
+      total: data.total && data.total.trim() !== "" ? data.total : undefined,
+    };
+    await mutation.mutateAsync({ data: invoiceData, id: id });
   };
 
   return (
