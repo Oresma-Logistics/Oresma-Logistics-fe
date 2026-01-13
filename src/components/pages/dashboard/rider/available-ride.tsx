@@ -9,6 +9,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getMotorcycleRiders } from "@/_lib/api/auth/motorcycle-riders";
 import { MotorcycleRidersResponse } from "@/_lib/type/auth/motorcycle-riders";
 import SkeletonCardList from "@/components/shared/skeleton/card-list-skeleton";
+import { calculateRidePrice } from "@/_lib/utils/pricing";
+import { useEffect, useState } from "react";
 
 const driversData = [
   {
@@ -68,6 +70,7 @@ const driversData = [
 export function AvailableRide() {
   const params = useSearchParams();
   const vehicle = params.get("vehicle");
+  const [routeDistance, setRouteDistance] = useState<number | null>(null);
 
   // Fetch motorcycle riders when keke is selected
   const {
@@ -80,6 +83,16 @@ export function AvailableRide() {
     enabled: vehicle === "keke",
   });
 
+  // Read route distance from localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedDistance = localStorage.getItem("routeDistanceKm");
+      if (storedDistance) {
+        setRouteDistance(parseFloat(storedDistance));
+      }
+    }
+  }, [vehicle]); // Re-read when vehicle changes
+
   if (!vehicle || vehicle === "lorry") {
     return null;
   }
@@ -87,21 +100,32 @@ export function AvailableRide() {
   // Transform motorcycle riders to driver format
   const motorcycleDrivers =
     vehicle === "keke" && motorcycleRidersData
-      ? motorcycleRidersData.riders.map((rider, index) => ({
-          id: rider.id,
-          driverName: rider.user?.name || "Unnamed Rider",
-          driverImage: "/placeholder.svg",
-          distance: `${Math.floor(Math.random() * 10) + 1} min away`, // Mock distance
-          rating: 4, // Default rating since API doesn't provide it
-          totalRides: 0, // Default rides since API doesn't provide it
-          vehicleName: "Motorcycle",
-          vehicleType: rider.vehicleInfo.vehicleType,
-          vehicleImage:
-            "https://res.cloudinary.com/duyhha3mz/image/upload/v1760319037/keke_mngdxu.png",
-          passengers: 1,
-          plateNumber: undefined,
-          riderData: rider, // Keep original rider data for reference
-        }))
+      ? motorcycleRidersData.riders.map((rider, index) => {
+          // Calculate price if distance is available
+          const calculatedPrice = routeDistance
+            ? calculateRidePrice(routeDistance, "keke")
+            : undefined;
+          
+          return {
+            id: rider.id,
+            driverName: rider.user?.name || "Unnamed Rider",
+            driverImage: "/placeholder.svg",
+            distance: routeDistance
+              ? `${routeDistance.toFixed(1)} km`
+              : `${Math.floor(Math.random() * 10) + 1} min away`,
+            rating: 4, // Default rating since API doesn't provide it
+            totalRides: 0, // Default rides since API doesn't provide it
+            vehicleName: "Motorcycle",
+            vehicleType: rider.vehicleInfo.vehicleType,
+            vehicleImage:
+              "https://res.cloudinary.com/duyhha3mz/image/upload/v1760319037/keke_mngdxu.png",
+            passengers: 1,
+            plateNumber: undefined,
+            riderData: rider, // Keep original rider data for reference
+            distanceKm: routeDistance || undefined,
+            price: calculatedPrice,
+          };
+        })
       : [];
 
   // Use motorcycle drivers if keke is selected, otherwise use hardcoded data
@@ -162,6 +186,8 @@ interface RiderCardProps {
     passengers: number;
     plateNumber?: string;
     riderData?: any; // For motorcycle riders original data
+    distanceKm?: number;
+    price?: number;
   };
 }
 
@@ -279,6 +305,8 @@ function RiderCard({ driver }: RiderCardProps) {
           vehicleImage: driver.vehicleImage,
           passengers: driver.passengers,
           plateNumber: driver.plateNumber,
+          distanceKm: driver.distanceKm,
+          price: driver.price,
         }}
       />
     </>

@@ -171,6 +171,7 @@ export function RouteMap({
 
       const distanceKm = (routeData.distance / 1000).toFixed(1);
       const distanceText = `${distanceKm} km`;
+      const distanceValue = parseFloat(distanceKm); // Store numeric distance value
 
       const routeResult: RouteResult = {
         coordinates,
@@ -183,6 +184,8 @@ export function RouteMap({
       setRoute(routeResult);
       setHasCalculated(true);
       localStorage.setItem("destination", destination);
+      // Store numeric distance in localStorage for price calculation
+      localStorage.setItem("routeDistanceKm", distanceValue.toString());
       onRouteCalculated?.(durationText, distanceText);
     } catch (err) {
       console.error("Error calculating route:", err);
