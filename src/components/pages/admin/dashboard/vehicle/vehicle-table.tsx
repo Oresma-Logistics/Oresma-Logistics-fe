@@ -11,14 +11,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { findRiderTrucks } from "@/_lib/api/dashboard/rider/findRiderTrucks";
-import { ResponseTrucks } from "@/_lib/type/trucks/trucks";
+import { ResponseTrucks, Truck } from "@/_lib/type/trucks/trucks";
 import SkeletonCardList from "@/components/shared/skeleton/card-list-skeleton";
+import CreateMotorcycleModal from "./create-motorcycle-form";
+import { getAllMotorcycles } from "@/_lib/api/admin/motorcycle/get-all-motorcycles";
+import { MotorcyclesResponse, Motorcycle } from "@/_lib/type/motorcycle/motorcycle";
+import { useMemo } from "react";
+
+type UnifiedVehicle = (Truck & { vehicleType: "truck" }) | (Motorcycle & { vehicleType: "motorcycle" });
+
 export function VehicleDashboardTable() {
+  const [openMotorcycleModal, setOpenMotorcycleModal] = useState<boolean>(false);
   const {
     data: lorriesData,
     isPending,
@@ -28,7 +36,35 @@ export function VehicleDashboardTable() {
     queryKey: ["AllTrucks"],
     queryFn: findRiderTrucks,
   });
-  if (isPending) {
+  const {
+    data: motorcyclesData,
+    isPending: motorcyclesPending,
+    error: motorcyclesError,
+    isError: motorcyclesIsError,
+  } = useQuery<MotorcyclesResponse>({
+    queryKey: ["AllMotorcycles"],
+    queryFn: getAllMotorcycles,
+  });
+
+  // Combine trucks and motorcycles into a unified array
+  const allVehicles = useMemo<UnifiedVehicle[]>(() => {
+    const trucks: UnifiedVehicle[] = (lorriesData?.trucks || []).map((truck) => ({
+      ...truck,
+      vehicleType: "truck" as const,
+    }));
+    const motorcycles: UnifiedVehicle[] = (motorcyclesData?.motorcycles || []).map((motorcycle) => ({
+      ...motorcycle,
+      vehicleType: "motorcycle" as const,
+    }));
+    return [...trucks, ...motorcycles];
+  }, [lorriesData, motorcyclesData]);
+
+  const totalCount = (lorriesData?.count || 0) + (motorcyclesData?.count || 0);
+  const isLoading = isPending || motorcyclesPending;
+  const hasError = isError || motorcyclesIsError;
+  const errorMessage = Error?.message || motorcyclesError?.message;
+
+  if (isLoading) {
     return <SkeletonCardList />;
   }
   const RowActions = () => {
@@ -53,6 +89,12 @@ export function VehicleDashboardTable() {
           title="Vehicles"
           actions={
             <>
+              <Button
+                variant="outline"
+                onClick={() => setOpenMotorcycleModal(true)}
+              >
+                Add Motorcycle
+              </Button>
               <Button variant="default" asChild>
                 <Link href="/admin/dashboard/vehicle/add-vehicle">
                   Add Vehicle
@@ -85,31 +127,62 @@ export function VehicleDashboardTable() {
         </Suspense>
       </div>
 
-      {!isPending && !isError ? (
-        lorriesData?.count === 0 ? (
-          <div>No Trucks</div>
+      {!hasError ? (
+        totalCount === 0 ? (
+          <div className="text-center py-8 text-gray-500">No Vehicles Found</div>
         ) : (
           <BaseTable
             columns={[
               {
+                key: "vehicleType",
+                label: "Vehicle Type",
+                render: (value) => (
+                  <span className="capitalize">{value === "motorcycle" ? "Motorcycle" : "Truck"}</span>
+                ),
+              },
+              {
                 key: "vehicleModel",
                 label: "Vehicle Model",
+                render: (value, row) => {
+                  if (row.vehicleType === "motorcycle") {
+                    const motorcycle = row as Motorcycle;
+                    return motorcycle.vehicleModel || "N/A";
+                  }
+                  return value || "N/A";
+                },
               },
               {
                 key: "make",
                 label: "Vehicle Make",
+                render: (value) => value || "N/A",
               },
               {
-                key: "_id",
-                label: "Vehicle ID",
+                key: "licensePlate",
+                label: "License Plate",
+                render: (value) => value || "N/A",
               },
               {
                 key: "truckType",
                 label: "Type",
+                render: (value, row) => {
+                  if (row.vehicleType === "motorcycle") {
+                    return "Motorcycle";
+                  }
+                  return value || "N/A";
+                },
               },
               {
-                key: "riderId.userId",
+                key: "riderId",
                 label: "Owner",
+                render: (value, row) => {
+                  if (row.vehicleType === "motorcycle") {
+                    const motorcycle = row as Motorcycle;
+                    return motorcycle.riderId ? "Assigned" : "Unassigned";
+                  }
+                  // For trucks, check nested userId
+                  const truck = row as Truck;
+                  return truck.riderId?.userId?.name || truck.riderId?.userId?.email || "Unassigned";
+                },
               },
               {
                 key: "isVerified",
@@ -122,15 +195,19 @@ export function VehicleDashboardTable() {
                   ),
               },
             ]}
-            data={lorriesData.trucks}
+            data={allVehicles}
             showCountBadge={true}
-            count={lorriesData.count}
+            count={totalCount}
             rowActions2={RowActions}
           />
         )
       ) : (
-        <div className="text-red-400">{Error?.message}</div>
+        <div className="text-red-400">{errorMessage}</div>
       )}
+      <CreateMotorcycleModal
+        isOpen={openMotorcycleModal}
+        onClose={() => setOpenMotorcycleModal(false)}
+      />
     </div>
   );
 }
