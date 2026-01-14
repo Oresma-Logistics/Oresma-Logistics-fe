@@ -2,21 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
 import Cookies from "js-cookie";
 import { LocationInput } from "@/components/shared/map/location-input";
+import { RouteMap } from "@/components/shared/map/route-map";
 import { VehicleSelector } from "@/components/shared/map/vehicle-selector";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { RouteInfo } from "@/components/shared/map/route-info";
 import { LorryRecommendation } from "./lorryReconmended";
 import { availableMemory } from "process";
-
-// Dynamically import RouteMap to avoid SSR issues with Leaflet
-const RouteMap = dynamic(
-  () => import("@/components/shared/map/route-map").then((mod) => ({ default: mod.RouteMap })),
-  { ssr: false }
-);
 
 const vehicles = [
   {
