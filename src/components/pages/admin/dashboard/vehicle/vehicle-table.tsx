@@ -19,6 +19,7 @@ import { findRiderTrucks } from "@/_lib/api/dashboard/rider/findRiderTrucks";
 import { ResponseTrucks, Truck } from "@/_lib/type/trucks/trucks";
 import SkeletonCardList from "@/components/shared/skeleton/card-list-skeleton";
 import CreateMotorcycleModal from "./create-motorcycle-form";
+import AssignRiderModal from "./assign-rider-modal";
 import { getAllMotorcycles } from "@/_lib/api/admin/motorcycle/get-all-motorcycles";
 import { MotorcyclesResponse, Motorcycle } from "@/_lib/type/motorcycle/motorcycle";
 import { useMemo } from "react";
@@ -27,6 +28,8 @@ type UnifiedVehicle = (Truck & { vehicleType: "truck" }) | (Motorcycle & { vehic
 
 export function VehicleDashboardTable() {
   const [openMotorcycleModal, setOpenMotorcycleModal] = useState<boolean>(false);
+  const [openAssignRiderModal, setOpenAssignRiderModal] = useState<boolean>(false);
+  const [selectedMotorcycle, setSelectedMotorcycle] = useState<Motorcycle | null>(null);
   const {
     data: lorriesData,
     isPending,
@@ -67,16 +70,27 @@ export function VehicleDashboardTable() {
   if (isLoading) {
     return <SkeletonCardList />;
   }
-  const RowActions = () => {
+  const RowActions = (row: UnifiedVehicle) => {
+    const handleAssignRider = () => {
+      if (row.vehicleType === "motorcycle") {
+        setSelectedMotorcycle(row as Motorcycle);
+        setOpenAssignRiderModal(true);
+      }
+    };
+
     return (
       <DropdownMenu>
         <DropdownMenuTrigger>
           <MoreVertical className="h-5 w-5" />
         </DropdownMenuTrigger>
         <DropdownMenuContent className="px-3 py-2">
-          <DropdownMenuItem>Edit User</DropdownMenuItem>
-          <DropdownMenuItem>Suspend user</DropdownMenuItem>
-          <DropdownMenuItem>User Profile</DropdownMenuItem>
+          {row.vehicleType === "motorcycle" && (
+            <DropdownMenuItem onClick={handleAssignRider}>
+              Assign Rider
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem>Edit Vehicle</DropdownMenuItem>
+          <DropdownMenuItem>View Details</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     );
@@ -217,6 +231,14 @@ export function VehicleDashboardTable() {
       <CreateMotorcycleModal
         isOpen={openMotorcycleModal}
         onClose={() => setOpenMotorcycleModal(false)}
+      />
+      <AssignRiderModal
+        isOpen={openAssignRiderModal}
+        onClose={() => {
+          setOpenAssignRiderModal(false);
+          setSelectedMotorcycle(null);
+        }}
+        motorcycle={selectedMotorcycle}
       />
     </div>
   );
