@@ -39,10 +39,16 @@ const motorcycleSchema = z.object({
   riderId: z.string().optional(),
   make: z.string().optional(),
   vehicleModel: z.string().optional(),
-  year: z.coerce.number().optional(),
+  year: z.preprocess(
+    (val) => (val === "" || val === undefined ? undefined : Number(val)),
+    z.number().optional()
+  ),
   color: z.string().optional(),
   fuelType: z.string().optional(),
-  engineSize: z.coerce.number().optional(),
+  engineSize: z.preprocess(
+    (val) => (val === "" || val === undefined ? undefined : Number(val)),
+    z.number().optional()
+  ),
   transmissionType: z.string().optional(),
 });
 
