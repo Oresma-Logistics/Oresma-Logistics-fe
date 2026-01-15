@@ -10,6 +10,9 @@ import { useState, useEffect } from "react";
 import { showToast } from "@/components/shared/toast";
 import { LoadingSpinner } from "@/components/shared/loading/loadingSpinner";
 import Cookies from "js-cookie";
+import { useQuery } from "@tanstack/react-query";
+import { getMotorcyclesByRider } from "@/_lib/api/admin/motorcycle/get-motorcycles-by-rider";
+import { MotorcyclesResponse } from "@/_lib/type/motorcycle/motorcycle";
 
 interface DriverDetailsModalProps {
   open: boolean;
@@ -40,6 +43,20 @@ export function DriverDetailsModal({
   const [isSendingRequest, setIsSendingRequest] = useState(false);
   const [origin, setOrigin] = useState<string>("");
   const [destination, setDestination] = useState<string>("");
+
+  // Check if this is a motorcycle rider (keke)
+  const isMotorcycleRider = driver.vehicleType === "motorcycle" || driver.vehicleName === "Motorcycle";
+  const riderId = typeof driver.id === "string" ? driver.id : String(driver.id);
+
+  // Fetch motorcycle for this rider if it's a motorcycle rider
+  const { data: motorcyclesData } = useQuery<MotorcyclesResponse>({
+    queryKey: ["motorcyclesByRider", riderId],
+    queryFn: () => getMotorcyclesByRider(riderId),
+    enabled: open && isMotorcycleRider && !!riderId,
+  });
+
+  // Get the first motorcycle's license plate
+  const motorcycleLicensePlate = motorcyclesData?.motorcycles?.[0]?.licensePlate || driver.plateNumber;
 
   // Get origin and destination from cookies
   useEffect(() => {
@@ -173,7 +190,7 @@ export function DriverDetailsModal({
           <div className="bg-gray-50 rounded-2xl p-4 w-full text-center">
             <p className="text-xs text-gray-500 mb-1">Plate Number</p>
             <p className="text-lg font-semibold text-gray-900">
-              {driver.plateNumber || "ABC-123-XY"}
+              {motorcycleLicensePlate || driver.plateNumber || "N/A"}
             </p>
           </div>
 
