@@ -39,20 +39,24 @@ const motorcycleSchema = z.object({
   riderId: z.string().optional(),
   make: z.string().optional(),
   vehicleModel: z.string().optional(),
-  year: z.preprocess(
-    (val) => (val === "" || val === undefined ? undefined : Number(val)),
-    z.number().optional()
-  ),
+  year: z.string().optional(),
   color: z.string().optional(),
   fuelType: z.string().optional(),
-  engineSize: z.preprocess(
-    (val) => (val === "" || val === undefined ? undefined : Number(val)),
-    z.number().optional()
-  ),
+  engineSize: z.string().optional(),
   transmissionType: z.string().optional(),
 });
 
-type MotorcycleFormData = z.infer<typeof motorcycleSchema>;
+type MotorcycleFormData = {
+  licensePlate: string;
+  riderId?: string;
+  make?: string;
+  vehicleModel?: string;
+  year?: string;
+  color?: string;
+  fuelType?: string;
+  engineSize?: string;
+  transmissionType?: string;
+};
 
 export default function CreateMotorcycleModal({
   isOpen,
@@ -74,10 +78,10 @@ export default function CreateMotorcycleModal({
       riderId: undefined,
       make: "",
       vehicleModel: "",
-      year: undefined,
+      year: "",
       color: "",
       fuelType: undefined,
-      engineSize: undefined,
+      engineSize: "",
       transmissionType: undefined,
     },
   });
@@ -116,10 +120,16 @@ export default function CreateMotorcycleModal({
     if (data.riderId) payload.riderId = data.riderId;
     if (data.make) payload.make = data.make;
     if (data.vehicleModel) payload.vehicleModel = data.vehicleModel;
-    if (data.year) payload.year = data.year;
+    if (data.year && data.year.trim() !== "") {
+      const yearNum = Number(data.year);
+      if (!isNaN(yearNum)) payload.year = yearNum;
+    }
     if (data.color) payload.color = data.color;
     if (data.fuelType) payload.fuelType = data.fuelType;
-    if (data.engineSize) payload.engineSize = data.engineSize;
+    if (data.engineSize && data.engineSize.trim() !== "") {
+      const engineSizeNum = Number(data.engineSize);
+      if (!isNaN(engineSizeNum)) payload.engineSize = engineSizeNum;
+    }
     if (data.transmissionType) payload.transmissionType = data.transmissionType;
 
     await mutation.mutateAsync(payload);

@@ -176,12 +176,22 @@ export function VehicleDashboardTable() {
                 label: "Owner",
                 render: (value, row) => {
                   if (row.vehicleType === "motorcycle") {
-                    const motorcycle = row as Motorcycle;
+                    const motorcycle = row as Motorcycle & { vehicleType: "motorcycle" };
                     return motorcycle.riderId ? "Assigned" : "Unassigned";
                   }
                   // For trucks, check nested userId
-                  const truck = row as Truck;
-                  return truck.riderId?.userId?.name || truck.riderId?.userId?.email || "Unassigned";
+                  if (row.vehicleType === "truck") {
+                    const truck = row as Truck & { vehicleType: "truck" };
+                    if (!truck.riderId) return "Unassigned";
+                    // Handle both cases: userId as string or object
+                    // Type assertion needed because API may return object despite type definition
+                    const userId = truck.riderId.userId as string | { name?: string; email?: string } | undefined;
+                    if (typeof userId === "object" && userId !== null && "name" in userId) {
+                      return userId.name || userId.email || "Unassigned";
+                    }
+                    return "Assigned";
+                  }
+                  return "Unassigned";
                 },
               },
               {
