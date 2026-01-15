@@ -100,30 +100,27 @@ export function AvailableRide() {
   // Transform motorcycle riders to driver format
   const motorcycleDrivers =
     vehicle === "keke" && motorcycleRidersData
-      ? motorcycleRidersData.riders.map((rider, index) => {
-          // Calculate price if distance is available
-          const calculatedPrice = routeDistance
-            ? calculateRidePrice(routeDistance, "keke")
-            : undefined;
+      ? motorcycleRidersData.riders.map((riderWithDetails) => {
+          const { rider, motorcycle } = riderWithDetails;
           
           return {
-            id: rider.id,
-            driverName: rider.user?.name || "Unnamed Rider",
+            id: rider._id,
+            driverName: rider.userId?.name || "Unnamed Rider",
             driverImage: "/placeholder.svg",
             distance: routeDistance
               ? `${routeDistance.toFixed(1)} km`
               : `${Math.floor(Math.random() * 10) + 1} min away`,
-            rating: 4, // Default rating since API doesn't provide it
-            totalRides: 0, // Default rides since API doesn't provide it
+            rating: motorcycle.rating || rider.rating || 0,
+            totalRides: motorcycle.totalTrips || rider.totalDeliveries || 0,
             vehicleName: "Motorcycle",
             vehicleType: rider.vehicleInfo.vehicleType,
             vehicleImage:
               "https://res.cloudinary.com/duyhha3mz/image/upload/v1760319037/keke_mngdxu.png",
             passengers: 1,
-            plateNumber: undefined,
-            riderData: rider, // Keep original rider data for reference
+            plateNumber: motorcycle.licensePlate,
+            riderData: riderWithDetails, // Keep original rider data for reference
             distanceKm: routeDistance || undefined,
-            price: calculatedPrice,
+            totalDeliveries: rider.totalDeliveries || 0, // Replace price with total deliveries
           };
         })
       : [];
@@ -187,7 +184,7 @@ interface RiderCardProps {
     plateNumber?: string;
     riderData?: any; // For motorcycle riders original data
     distanceKm?: number;
-    price?: number;
+    totalDeliveries?: number;
   };
 }
 
@@ -306,7 +303,7 @@ function RiderCard({ driver }: RiderCardProps) {
           passengers: driver.passengers,
           plateNumber: driver.plateNumber,
           distanceKm: driver.distanceKm,
-          price: driver.price,
+          totalDeliveries: driver.totalDeliveries,
         }}
       />
     </>
