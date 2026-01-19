@@ -1,13 +1,26 @@
 import { axiosInstance2 } from "@/_lib/axios";
 
-interface RideRequestProps {
-  pickup: {
-    address: string;
-  };
-  dropoff: {
-    address: string;
-  };
+interface Contact {
+  name: string;
+  phone: string;
+  email: string;
+}
+
+interface Location {
+  address: string;
+  contact: Contact;
+}
+
+interface Pricing {
+  currency: string;
+  total: number;
+}
+
+export interface RideRequestProps {
+  pickup: Location;
+  dropoff: Location;
   vehicleType: string;
+  pricing: Pricing;
 }
 
 export async function createRideRequest(data: RideRequestProps) {

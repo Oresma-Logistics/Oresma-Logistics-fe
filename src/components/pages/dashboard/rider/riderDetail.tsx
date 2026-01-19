@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { showToast } from "@/components/shared/toast";
 import { LoadingSpinner } from "@/components/shared/loading/loadingSpinner";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 interface DriverDetailsModalProps {
   open: boolean;
@@ -37,6 +38,7 @@ export function DriverDetailsModal({
   onOpenChange,
   driver,
 }: DriverDetailsModalProps) {
+  const router = useRouter();
   const [isSendingRequest, setIsSendingRequest] = useState(false);
   const [origin, setOrigin] = useState<string>("");
   const [destination, setDestination] = useState<string>("");
@@ -63,17 +65,11 @@ export function DriverDetailsModal({
       return;
     }
 
-    setIsSendingRequest(true);
+    // Close the modal and navigate to shipment details page
+    onOpenChange(false);
     
-    // Simulate API call with timeout (2 seconds)
-    setTimeout(() => {
-      setIsSendingRequest(false);
-      showToast.success(
-        "Request Sent",
-        "Your request has been sent to the rider successfully"
-      );
-      onOpenChange(false);
-    }, 2000);
+    // Navigate to shipment details page with driver ID and vehicle type as query parameters
+    router.push(`/dashboard/rider/shipment-details?driverId=${driver.id}&vehicleType=${driver.vehicleType}`);
   };
 
   return (
