@@ -8,7 +8,7 @@ interface Contact {
 
 interface Location {
   address: string;
-  contact: Contact;
+  contact?: Contact; // Made optional for backward compatibility with truck routes
 }
 
 interface Pricing {
@@ -16,12 +16,31 @@ interface Pricing {
   total: number;
 }
 
-export interface RideRequestProps {
-  pickup: Location;
-  dropoff: Location;
-  vehicleType: string;
-  pricing: Pricing;
-}
+// Union type to support both legacy (truck) and new (shipment details) formats
+export type RideRequestProps =
+  | {
+      // New format with contact and pricing (for shipment details)
+      pickup: {
+        address: string;
+        contact: Contact;
+      };
+      dropoff: {
+        address: string;
+        contact: Contact;
+      };
+      vehicleType: string;
+      pricing: Pricing;
+    }
+  | {
+      // Legacy format without contact and pricing (for truck routes)
+      pickup: {
+        address: string;
+      };
+      dropoff: {
+        address: string;
+      };
+      vehicleType: string;
+    };
 
 export async function createRideRequest(data: RideRequestProps) {
   const response = await axiosInstance2.post("/ride-requests", data);
