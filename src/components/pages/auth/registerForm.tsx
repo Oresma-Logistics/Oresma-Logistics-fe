@@ -1,8 +1,6 @@
 "use client";
 
-import type React from "react";
-
-// import { useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EmailInput } from "@/components/utility/form/email-input";
@@ -24,8 +22,16 @@ import { useMutation } from "@tanstack/react-query";
 import { userSignIn } from "@/_lib/api/auth/signUp";
 import { showToast } from "@/components/shared/toast";
 import Image from "next/image";
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import { nigerianStates } from "@/_lib/data/nigerian-states";
 
 export function RegisterForm() {
   const navigate = useRouter();
@@ -46,6 +52,8 @@ export function RegisterForm() {
           /^[\d\+]{1,14}$/,
           "Invalid phone number format. Include country code if possible."
         ),
+      state: z.string().optional(),
+      country: z.string().optional(),
     })
     .refine((data) => data.confirmPassword === data.password, {
       message: "Passwords doesn't match",
@@ -56,9 +64,19 @@ export function RegisterForm() {
     handleSubmit,
     formState: { errors },
     register,
+    setValue,
+    control,
   } = useForm({
     resolver: zodResolver(formScheme),
+    defaultValues: {
+      country: "Nigeria",
+    },
   });
+
+  // Ensure country is always set to Nigeria
+  useEffect(() => {
+    setValue("country", "Nigeria");
+  }, [setValue]);
 
   const mutation = useMutation({
     mutationFn: userSignIn,
@@ -133,6 +151,55 @@ export function RegisterForm() {
                 : undefined
             }
           />
+
+          {/* State Field */}
+          <div className="space-y-2">
+            <Label htmlFor="state" className="text-foreground font-medium">
+              State (Optional)
+            </Label>
+            <Controller
+              name="state"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  value={field.value || ""}
+                  onValueChange={field.onChange}
+                >
+                  <SelectTrigger
+                    id="state"
+                    className="h-11 w-full bg-background border-input focus:border-primary transition-colors"
+                  >
+                    <SelectValue placeholder="Select a state" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {nigerianStates.map((state) => (
+                      <SelectItem key={state} value={state}>
+                        {state}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.state && (
+              <div className="text-red-500 text-sm">{errors.state.message}</div>
+            )}
+          </div>
+
+          {/* Country Field */}
+          <div className="space-y-2">
+            <Label htmlFor="country" className="text-foreground font-medium">
+              Country
+            </Label>
+            <input
+              type="text"
+              {...register("country")}
+              defaultValue="Nigeria"
+              disabled
+              readOnly
+              className="h-11 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground cursor-not-allowed"
+            />
+          </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4 mt-4">
           <Button

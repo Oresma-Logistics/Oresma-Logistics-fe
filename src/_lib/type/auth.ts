@@ -3,6 +3,8 @@ export type SignUp = {
   phone: string;
   name: string;
   email: string;
+  state?: string;
+  country?: string;
 };
 
 export type CreateRiderPayload = {
