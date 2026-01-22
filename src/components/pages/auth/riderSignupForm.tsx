@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -23,6 +23,15 @@ import { riderSignUp } from "@/_lib/api/auth/riderSignUp";
 import { showToast } from "@/components/shared/toast";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { nigerianStates } from "@/_lib/data/nigerian-states";
 
 export function RiderSignupForm() {
   const navigate = useRouter();
@@ -45,12 +54,14 @@ export function RiderSignupForm() {
         /^[\d\+]{1,14}$/,
         "Invalid phone number format. Include country code if possible."
       ),
+    state: z.string().min(1, "State is required"),
   });
 
   const {
     handleSubmit,
     formState: { errors },
     register,
+    control,
   } = useForm({
     resolver: zodResolver(formScheme),
   });
@@ -133,6 +144,38 @@ export function RiderSignupForm() {
             />
             {errors.phone && (
               <div className="text-red-300 text-sm">{errors.phone.message}</div>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="state" className="text-sm font-medium text-white">
+              State
+            </Label>
+            <Controller
+              name="state"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  value={field.value || ""}
+                  onValueChange={field.onChange}
+                >
+                  <SelectTrigger
+                    id="state"
+                    className="h-11 w-full bg-white/95 border border-white/20 focus:border-[#F75720] focus:ring-2 focus:ring-[#F75720]/20 text-foreground transition-colors"
+                  >
+                    <SelectValue placeholder="Select a state" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {nigerianStates.map((state) => (
+                      <SelectItem key={state} value={state}>
+                        {state}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.state && (
+              <div className="text-red-300 text-sm">{errors.state.message}</div>
             )}
           </div>
           <div className="space-y-2">
