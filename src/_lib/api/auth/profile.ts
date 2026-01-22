@@ -8,6 +8,7 @@ export async function Profile() {
 type UpdateProfile = {
   name: string;
   phone: string;
+  state?: string;
 };
 
 export async function UpdateProfile(data: UpdateProfile) {

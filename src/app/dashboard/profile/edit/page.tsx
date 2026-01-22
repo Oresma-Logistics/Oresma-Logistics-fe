@@ -1,4 +1,4 @@
-import { EditComponent } from "@/components/pages/rider/dashbord/profile/profile-edit";
+import { EditComponent } from "@/components/pages/dashboard/profile/profile-edit";
 import { Breadcrumb } from "@/components/shared/dashboard/breadcrumb";
 
 export default function UserProfileEdit() {

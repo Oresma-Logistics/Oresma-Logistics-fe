@@ -2,13 +2,30 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
 import Cookies from "js-cookie";
 import { User } from "@/_lib/type/cookies";
+import { useQuery } from "@tanstack/react-query";
+import { Profile } from "@/_lib/api/auth/profile";
+import { ProfileUser } from "@/_lib/type/auth/users";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function ProfileComponent() {
   const rawUser = Cookies.get("user");
+  console.log(rawUser);
   const userData: User | null = rawUser ? JSON.parse(rawUser) : null;
+
+  const {
+    data: profileData,
+    isPending,
+    error,
+  } = useQuery<ProfileUser>({
+    queryKey: ["userProfile"],
+    queryFn: Profile,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
   if (!userData) return null;
 
@@ -43,6 +60,9 @@ export default function ProfileComponent() {
                   </h2>
                 </div>
               </div>
+              <Button asChild>
+                <Link href="/dashboard/profile/edit">Edit Profile</Link>
+              </Button>
             </CardHeader>
           </Card>
 
@@ -71,6 +91,31 @@ export default function ProfileComponent() {
                   </p>
                 </div>
               </div>
+
+              {isPending ? (
+                <div className="flex items-center gap-4">
+                  <MapPin className="w-5 h-5 text-orange-600" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">State</p>
+                    <Skeleton className="h-5 w-24" />
+                  </div>
+                </div>
+              ) : (
+                profileData &&
+                profileData.user &&
+                "state" in profileData.user &&
+                profileData.user.state && (
+                  <div className="flex items-center gap-4">
+                    <MapPin className="w-5 h-5 text-orange-600" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">State</p>
+                      <p className="font-medium text-foreground">
+                        {profileData.user.state}
+                      </p>
+                    </div>
+                  </div>
+                )
+              )}
             </CardContent>
           </Card>
 

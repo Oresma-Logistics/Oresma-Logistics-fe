@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import { CustomerInput } from "@/components/utility/form/customInput";
 import z from "zod";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { RiderProfileResponse } from "@/_lib/type/auth/users";
@@ -20,6 +20,15 @@ import { UpdateProfile } from "@/_lib/api/auth/profile";
 import { showToast } from "@/components/shared/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { nigerianStates } from "@/_lib/data/nigerian-states";
 export function EditComponent() {
   const {
     data: riderProfileData,
@@ -44,6 +53,7 @@ export function EditComponent() {
         /^[\d\+]{1,14}$/,
         "Invalid phone number format. Include country code if possible."
       ),
+    state: z.string().optional(),
   });
 
   const {
@@ -51,6 +61,7 @@ export function EditComponent() {
     register,
     formState: { errors },
     reset,
+    control,
   } = useForm({
     resolver: zodResolver(formScheme),
   });
@@ -77,6 +88,7 @@ export function EditComponent() {
       reset({
         name: riderProfileData.rider.userId.name,
         phone: riderProfileData.rider.userId.phone,
+        state: (riderProfileData.rider.userId as { state?: string }).state || "",
       });
     }
   }, [riderProfileData, reset]);
@@ -124,6 +136,40 @@ export function EditComponent() {
                 register={register}
                 error={errors.phone ? errors.phone.message : undefined}
               />
+
+              {/* State Field */}
+              <div className="space-y-2">
+                <Label htmlFor="state" className="text-foreground font-medium">
+                  State
+                </Label>
+                <Controller
+                  name="state"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value || ""}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger
+                        id="state"
+                        className="h-11 w-full bg-background border-input focus:border-primary transition-colors"
+                      >
+                        <SelectValue placeholder="Select a state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {nigerianStates.map((state) => (
+                          <SelectItem key={state} value={state}>
+                            {state}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.state && (
+                  <div className="text-red-500 text-sm">{errors.state.message}</div>
+                )}
+              </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4 mt-4">
               <Button

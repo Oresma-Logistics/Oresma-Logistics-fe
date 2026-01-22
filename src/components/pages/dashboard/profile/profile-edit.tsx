@@ -7,27 +7,35 @@ import {
 } from "@/components/ui/card";
 import { CustomerInput } from "@/components/utility/form/customInput";
 import z from "zod";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { RiderProfileResponse } from "@/_lib/type/auth/users";
-import { getRiderProfile } from "@/_lib/api/rider/rider";
+import { ProfileUser } from "@/_lib/type/auth/users";
+import { Profile, UpdateProfile } from "@/_lib/api/auth/profile";
 import SkeletonCard from "@/components/shared/skeleton/single-card-skeleton";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
-import { UpdateProfile } from "@/_lib/api/auth/profile";
 import { showToast } from "@/components/shared/toast";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { nigerianStates } from "@/_lib/data/nigerian-states";
 
 export function EditComponent() {
   const {
-    data: riderProfileData,
+    data: profileData,
     isPending,
     error: Error,
-  } = useQuery<RiderProfileResponse>({
-    queryKey: ["riderProfile"],
-    queryFn: getRiderProfile,
+  } = useQuery<ProfileUser>({
+    queryKey: ["userProfile"],
+    queryFn: Profile,
   });
   const queryClient = useQueryClient();
   type FormData = z.infer<typeof formScheme>;
@@ -44,6 +52,7 @@ export function EditComponent() {
         /^[\d\+]{1,14}$/,
         "Invalid phone number format. Include country code if possible."
       ),
+    state: z.string().optional(),
   });
 
   const {
@@ -51,6 +60,7 @@ export function EditComponent() {
     register,
     formState: { errors },
     reset,
+    control,
   } = useForm({
     resolver: zodResolver(formScheme),
   });
@@ -58,28 +68,38 @@ export function EditComponent() {
   const mutation = useMutation({
     mutationFn: UpdateProfile,
     onSuccess: (data) => {
-      showToast.success("SignUp Successful", data.message);
+      showToast.success("Profile Updated", data.message);
       queryClient.invalidateQueries({
-        queryKey: ["riderProfile"],
+        queryKey: ["userProfile"],
       });
     },
     onError: (error) => {
-      showToast.error("Signup Failed", error.message);
+      showToast.error("Update Failed", error.message);
     },
   });
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    await mutation.mutateAsync(data);
+    // Always include state if it has a value
+    const submitData: { name: string; phone: string; state?: string } = {
+      name: data.name,
+      phone: data.phone,
+    };
+    if (data.state && data.state.trim() !== "") {
+      submitData.state = data.state;
+    }
+    console.log("Submitting profile data:", submitData);
+    await mutation.mutateAsync(submitData);
   };
 
   useEffect(() => {
-    if (riderProfileData) {
+    if (profileData) {
       reset({
-        name: riderProfileData.rider.userId.name,
-        phone: riderProfileData.rider.userId.phone,
+        name: profileData.user.name,
+        phone: profileData.user.phone,
+        state: profileData.user.state || "",
       });
     }
-  }, [riderProfileData, reset]);
+  }, [profileData, reset]);
 
   if (isPending) {
     return <SkeletonCard />;
@@ -111,7 +131,7 @@ export function EditComponent() {
               <CustomerInput
                 inputname="name"
                 type="text"
-                label="Rider Name"
+                label="Name"
                 placeholder="John Joe"
                 register={register}
                 error={errors.name ? errors.name.message : undefined}
@@ -119,11 +139,45 @@ export function EditComponent() {
               <CustomerInput
                 inputname="phone"
                 type="text"
-                label="Rider Phone Number"
+                label="Phone Number"
                 placeholder="e.g. +1234567890"
                 register={register}
                 error={errors.phone ? errors.phone.message : undefined}
               />
+
+              {/* State Field */}
+              <div className="space-y-2">
+                <Label htmlFor="state" className="text-foreground font-medium">
+                  State
+                </Label>
+                <Controller
+                  name="state"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value || ""}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger
+                        id="state"
+                        className="h-11 w-full bg-background border-input focus:border-primary transition-colors"
+                      >
+                        <SelectValue placeholder="Select a state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {nigerianStates.map((state) => (
+                          <SelectItem key={state} value={state}>
+                            {state}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.state && (
+                  <div className="text-red-500 text-sm">{errors.state.message}</div>
+                )}
+              </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4 mt-4">
               <Button
