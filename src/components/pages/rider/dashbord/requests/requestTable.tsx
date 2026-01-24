@@ -61,11 +61,7 @@ export function RequestTable() {
   const RowActions = ({ row }: { row: RideRequest }) => {
     return (
       <div className="flex gap-1 sm:gap-2">
-        {row.status === "payment_success" && (
-          <>
-            <AcceptRequest id={row._id} />
-          </>
-        )}
+        {row.status !== "assigned" && <AcceptRequest id={row._id} />}
       </div>
     );
   };

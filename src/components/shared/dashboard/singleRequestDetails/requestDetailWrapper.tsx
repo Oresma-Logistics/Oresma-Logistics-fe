@@ -124,6 +124,66 @@ export default function RequestDetailWrapper({
                 </div>
               </div>
             </Card>
+
+            {/* Pickup & Dropoff Contact Details */}
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-4 text-foreground">
+                Contact Information
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Pickup Contact */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    Pickup Contact
+                  </h3>
+                  <div className="bg-muted/30 rounded-lg p-4 space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium">
+                        {request.pickup.contact?.name || "N/A"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-muted-foreground" />
+                      <span>{request.pickup.contact?.phone || "N/A"}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-muted-foreground" />
+                      <span className="truncate">
+                        {request.pickup.contact?.email || "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dropoff Contact */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                    Dropoff Contact
+                  </h3>
+                  <div className="bg-muted/30 rounded-lg p-4 space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium">
+                        {request.dropoff.contact?.name || "N/A"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-muted-foreground" />
+                      <span>{request.dropoff.contact?.phone || "N/A"}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-muted-foreground" />
+                      <span className="truncate">
+                        {request.dropoff.contact?.email || "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
             <MapRoute
               origin={request.pickup.address}
               destination={request.dropoff.address}

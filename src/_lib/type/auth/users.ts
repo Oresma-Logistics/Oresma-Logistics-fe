@@ -22,6 +22,8 @@ export interface ProfileUser {
   user: User;
 }
 
+import { Motorcycle } from "../motorcycle/motorcycle";
+
 export interface RiderProfileResponse {
   success: boolean;
   message: string;
@@ -32,7 +34,7 @@ export interface RiderProfileResponse {
     vehicleInfo: {
       vehicleType: string;
     };
-    bankDetails: {
+    bankDetails?: {
       accountNumber: string;
       accountName: string;
       bankName: string;
@@ -62,6 +64,7 @@ export interface RiderProfileResponse {
     isAvailable: boolean;
     accountStatus: string;
     verificationDocuments: string[]; // Empty array in example
+    motorcycles?: Motorcycle[]; // Array of motorcycles
     createdAt: string; // ISO date string
     updatedAt: string; // ISO date string
   };

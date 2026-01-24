@@ -51,6 +51,11 @@ export interface RideUser {
 
 export interface LocationInfo {
   address: string;
+  contact?: {
+    name: string;
+    phone: string;
+    email: string;
+  };
 }
 
 export interface PackageDetails {

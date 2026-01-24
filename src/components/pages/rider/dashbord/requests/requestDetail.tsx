@@ -54,7 +54,7 @@ export function RequestDetail({ id }: { id: string }) {
   if (!isPending && !isError) {
     return (
       <RequestDetailWrapper request={data.rideRequest}>
-        {data.rideRequest.status === "payment_success" && (
+        {data.rideRequest.status !== "assigned" && (
           <div>
             <div>
               <AcceptRequest />
