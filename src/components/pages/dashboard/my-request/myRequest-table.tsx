@@ -36,7 +36,22 @@ export default function MyRequestTable() {
         <BaseTable
           columns={[
             { key: "vehicleType", label: "Vehicle type" },
-            { key: "_id", label: "Vehicle ID" },
+            {
+              key: "riderName",
+              label: "Rider Name",
+              render(_value, row) {
+                const riderName = row.riderId?.userId?.name;
+                return riderName ? riderName : <span className="text-muted-foreground">Not Assigned</span>;
+              },
+            },
+            {
+              key: "riderPhone",
+              label: "Rider Phone",
+              render(_value, row) {
+                const riderPhone = row.riderId?.userId?.phone;
+                return riderPhone ? riderPhone : <span className="text-muted-foreground">-</span>;
+              },
+            },
             { key: "pickup.address", label: "Pick up location" },
             { key: "dropoff.address", label: "Final destination" },
             {

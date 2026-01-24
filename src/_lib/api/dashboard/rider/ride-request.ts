@@ -30,6 +30,7 @@ export type RideRequestProps =
       };
       vehicleType: string;
       pricing: Pricing;
+      riderId?: string; // Optional rider ID for assignment
     }
   | {
       // Legacy format without contact and pricing (for truck routes)
@@ -40,6 +41,7 @@ export type RideRequestProps =
         address: string;
       };
       vehicleType: string;
+      riderId?: string; // Optional rider ID for assignment
     };
 
 export async function createRideRequest(data: RideRequestProps) {

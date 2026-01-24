@@ -219,6 +219,7 @@ export function ShipmentDetailsForm() {
           timeFare: pricingBreakdown?.timeFare?.toString(),
           estimatedFare: pricingBreakdown?.total?.toString(),
         },
+        ...(driverId && { riderId: driverId }), // Add riderId if driverId is present
       };
 
       // Update cookies with the latest locations
