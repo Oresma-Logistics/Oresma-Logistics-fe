@@ -176,10 +176,10 @@ export function DriverDetailsModal({
           </div>
 
           {/* Call Button */}
-          <Button className="w-full bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 font-medium py-6 rounded-xl transition-colors flex items-center justify-center gap-2">
+          {/* <Button className="w-full bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 font-medium py-6 rounded-xl transition-colors flex items-center justify-center gap-2">
             <Phone className="w-5 h-5" />
             Call via Phone
-          </Button>
+          </Button> */}
           <Button
             onClick={handleContinue}
             disabled={isSendingRequest || !origin || !destination}

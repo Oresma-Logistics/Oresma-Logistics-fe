@@ -15,15 +15,22 @@ import {
 import { CustomerInput } from "@/components/utility/form/customInput";
 import { EmailInput } from "@/components/utility/form/email-input";
 import { PlacesAutocompleteInput } from "@/components/utility/form/places-autocomplete-input";
-import { Loader2, MapPin } from "lucide-react";
+import { Loader2, MapPin, Calculator, Info } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { showToast } from "@/components/shared/toast";
 import { Breadcrumb } from "@/components/shared/dashboard/breadcrumb";
 import Cookies from "js-cookie";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { createRideRequest } from "@/_lib/api/dashboard/rider/ride-request";
 import { PaymentModal } from "./payment-modal";
 import { useMutation } from "@tanstack/react-query";
+import {
+  calculateLogisticsPrice,
+  calculateRouteDistance,
+  formatNairaPrice,
+  type PricingBreakdown,
+} from "@/_lib/utils/pricing";
+import { useJsApiLoader } from "@react-google-maps/api";
 
 const formSchema = z.object({
   // Pickup and Dropoff Locations
@@ -68,15 +75,29 @@ export function ShipmentDetailsForm() {
   const vehicleType = searchParams.get("vehicleType") || "motorcycle";
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [rideRequestId, setRideRequestId] = useState<string | undefined>();
+  const [pricingBreakdown, setPricingBreakdown] = useState<PricingBreakdown | null>(null);
+  const [isCalculatingFare, setIsCalculatingFare] = useState(false);
+  const calculationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Load Google Maps API for distance calculation
+  const { isLoaded: isGoogleMapsLoaded } = useJsApiLoader({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries: ["places"],
+  });
 
   const {
     handleSubmit,
     formState: { errors },
     register,
     setValue,
+    watch,
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
   });
+
+  // Watch pickup and dropoff locations for real-time fare calculation
+  const pickupLocation = watch("pickupLocation");
+  const dropoffLocation = watch("dropoffLocation");
 
   const createRequestMutation = useMutation({
     mutationFn: createRideRequest,
@@ -102,6 +123,57 @@ export function ShipmentDetailsForm() {
       );
     },
   });
+
+  // Calculate fare when locations change
+  const calculateFare = useCallback(async () => {
+    if (!pickupLocation || !dropoffLocation || !isGoogleMapsLoaded) {
+      setPricingBreakdown(null);
+      return;
+    }
+
+    // Clear any pending calculation
+    if (calculationTimeoutRef.current) {
+      clearTimeout(calculationTimeoutRef.current);
+    }
+
+    // Debounce calculation to avoid too many API calls
+    setIsCalculatingFare(true);
+    calculationTimeoutRef.current = setTimeout(async () => {
+      try {
+        const routeData = await calculateRouteDistance(
+          pickupLocation,
+          dropoffLocation
+        );
+
+        if (routeData) {
+          const breakdown = calculateLogisticsPrice(
+            routeData.distanceKm,
+            routeData.timeMinutes,
+            vehicleType
+          );
+          setPricingBreakdown(breakdown);
+        } else {
+          setPricingBreakdown(null);
+        }
+      } catch (error) {
+        console.error("Error calculating fare:", error);
+        setPricingBreakdown(null);
+      } finally {
+        setIsCalculatingFare(false);
+      }
+    }, 800); // 800ms debounce
+  }, [pickupLocation, dropoffLocation, vehicleType, isGoogleMapsLoaded]);
+
+  // Calculate fare when locations or vehicle type changes
+  useEffect(() => {
+    calculateFare();
+
+    return () => {
+      if (calculationTimeoutRef.current) {
+        clearTimeout(calculationTimeoutRef.current);
+      }
+    };
+  }, [calculateFare]);
 
   // Load pickup and dropoff locations from cookies
   useEffect(() => {
@@ -141,7 +213,11 @@ export function ShipmentDetailsForm() {
         vehicleType: vehicleType.toLowerCase(), // Ensure lowercase (motorcycle, car, truck)
         pricing: {
           currency: "NGN",
-          total: 1500, // TODO: Calculate actual price based on distance/route
+          total: pricingBreakdown?.total || 1500, // Use calculated price or fallback
+          baseFare: pricingBreakdown?.baseFare?.toString(),
+          distanceFare: pricingBreakdown?.distanceFare?.toString(),
+          timeFare: pricingBreakdown?.timeFare?.toString(),
+          estimatedFare: pricingBreakdown?.total?.toString(),
         },
       };
 
@@ -286,6 +362,67 @@ export function ShipmentDetailsForm() {
                 />
               </div>
             </div>
+
+            {/* Fare Calculation Section */}
+            {(pickupLocation || dropoffLocation) && (
+              <div className="space-y-4 border-t pt-6">
+                <h3 className="text-xl font-semibold text-gray-900 border-b pb-2 flex items-center gap-2">
+                  <Calculator className="w-5 h-5" />
+                  Estimated Fare
+                </h3>
+                
+                {isCalculatingFare ? (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm">Calculating fare...</span>
+                  </div>
+                ) : pricingBreakdown ? (
+                  <div className="space-y-3">
+                    <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Base Fare</span>
+                        <span className="font-medium">{formatNairaPrice(pricingBreakdown.baseFare)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          Distance ({pricingBreakdown.distanceKm} km)
+                        </span>
+                        <span className="font-medium">{formatNairaPrice(pricingBreakdown.distanceFare)}</span>
+                      </div>
+                      {pricingBreakdown.timeFare > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            Time ({pricingBreakdown.estimatedTimeMinutes} min)
+                          </span>
+                          <span className="font-medium">{formatNairaPrice(pricingBreakdown.timeFare)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Service Fee</span>
+                        <span className="font-medium">{formatNairaPrice(pricingBreakdown.serviceFee)}</span>
+                      </div>
+                      <div className="border-t pt-2 mt-2 flex justify-between">
+                        <span className="font-semibold text-lg">Total</span>
+                        <span className="font-bold text-lg text-secondaryT">
+                          {formatNairaPrice(pricingBreakdown.total)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2 text-xs text-muted-foreground bg-blue-50 dark:bg-blue-950/20 p-3 rounded-md">
+                      <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      <p>
+                        Pricing is based on logistics service rates. Final fare may vary based on 
+                        actual route, traffic conditions, and waiting times.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    Enter both pickup and dropoff locations to see estimated fare
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
 
           <CardFooter className="flex gap-6 justify-end pt-8 pb-6">
