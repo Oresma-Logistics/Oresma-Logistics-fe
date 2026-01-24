@@ -4,9 +4,10 @@ import {
   // type RowAction,
 } from "@/components/shared/table/table-style";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   AcceptAssignmentRequest,
+  FinishAssignmentRequest,
   getAvalialeRequest,
 } from "@/_lib/api/rider/assignment";
 import { AssignmentRequests } from "@/_lib/type/request/rider-assignment";
@@ -17,6 +18,7 @@ import { StatusBadge } from "@/components/shared/dashboard/status-card";
 import { showToast } from "@/components/shared/toast";
 
 export function RequestTable() {
+  const queryClient = useQueryClient();
   const {
     data: AssignmentRequest,
     isPending,
@@ -29,14 +31,24 @@ export function RequestTable() {
   });
 
   const AcceptRequest = ({ id }: { id: string }) => {
+    const router = useRouter();
     const mutation = useMutation({
       mutationFn: AcceptAssignmentRequest,
       mutationKey: ["AcceptAssignment"],
-      onSuccess() {
+      onSuccess: async () => {
         showToast.success("Request Accepted");
+        // Invalidate queries to refresh data
+        await queryClient.invalidateQueries({
+          queryKey: ["AvaliableRides"],
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ["Single Reques for Rider", id],
+        });
+        // Navigate to the request detail page after successful acceptance
+        router.push(`/rider/dashboard/requests/${id}`);
       },
       onError() {
-        showToast.success("Failed to Accept Request");
+        showToast.error("Failed to Accept Request");
       },
     });
 
@@ -58,10 +70,62 @@ export function RequestTable() {
     );
   };
 
+  const EndTrip = ({ id }: { id: string }) => {
+    const mutation = useMutation({
+      mutationFn: FinishAssignmentRequest,
+      mutationKey: ["FinishAssignment"],
+      onSuccess: async () => {
+        showToast.success("Trip ended successfully");
+        // Invalidate queries to refresh data
+        await queryClient.invalidateQueries({
+          queryKey: ["AvaliableRides"],
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ["Single Reques for Rider", id],
+        });
+      },
+      onError() {
+        showToast.error("Failed to End Trip");
+      },
+    });
+
+    const handlerSubmit = async () => {
+      await mutation.mutateAsync(id);
+    };
+
+    return (
+      <Button
+        onClick={(e) => {
+          e.stopPropagation();
+          handlerSubmit();
+        }}
+        className="cursor-pointer"
+        disabled={mutation.isPending}
+      >
+        {mutation.isPending ? "Ending Trip..." : "End Trip"}
+      </Button>
+    );
+  };
+
   const RowActions = ({ row }: { row: RideRequest }) => {
+    const router = useRouter();
     return (
       <div className="flex gap-1 sm:gap-2">
-        {row.status !== "assigned" && <AcceptRequest id={row._id} />}
+        {row.status !== "assigned" &&
+          row.status !== "in-progress" &&
+          row.status !== "completed" && <AcceptRequest id={row._id} />}
+        {row.status === "assigned" && (
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/rider/dashboard/activeRequests/${row._id}/route`);
+            }}
+            className="cursor-pointer"
+          >
+            Start Trip
+          </Button>
+        )}
+        {row.status === "in-progress" && <EndTrip id={row._id} />}
       </div>
     );
   };
