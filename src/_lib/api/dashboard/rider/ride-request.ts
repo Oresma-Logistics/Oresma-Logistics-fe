@@ -50,3 +50,44 @@ export async function getMyRequest() {
   const response = await axiosInstance2.get("/ride-requests/me");
   return response.data;
 }
+
+interface InvoiceResponse {
+  success: boolean;
+  message: string;
+  transaction: {
+    reference: string;
+    type: string;
+    title: string;
+    description: string;
+    userId: string;
+    rideRequestId: string;
+    amount: number;
+    currency: string;
+    status: string;
+    provider: string;
+    channel: string;
+    metadata: {
+      source: string;
+      rideRequestId: string;
+      rideRequestReference: string;
+      userId: string;
+      transactionReference: string;
+    };
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+  };
+  authorizationUrl: string;
+}
+
+export async function updateRideRequestInvoice(
+  rideRequestId: string,
+  total: number
+): Promise<InvoiceResponse> {
+  const response = await axiosInstance2.patch(
+    `/ride-requests/${rideRequestId}/invoice`,
+    { total }
+  );
+  return response.data;
+}

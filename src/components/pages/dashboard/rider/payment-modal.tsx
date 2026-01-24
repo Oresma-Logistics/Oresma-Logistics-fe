@@ -3,30 +3,62 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { DialogTitle } from "@radix-ui/react-dialog";
-import { CreditCard, Package, CheckCircle } from "lucide-react";
+import { CreditCard, Package, CheckCircle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { updateRideRequestInvoice } from "@/_lib/api/dashboard/rider/ride-request";
+import { showToast } from "@/components/shared/toast";
 
 interface PaymentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   rideRequestId?: string;
+  totalAmount?: number;
 }
 
 export function PaymentModal({
   open,
   onOpenChange,
   rideRequestId,
+  totalAmount,
 }: PaymentModalProps) {
   const router = useRouter();
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
-  const handleContinueToPayment = () => {
-    // Navigate to payment page with ride request ID
-    if (rideRequestId) {
-      router.push(`/dashboard/payment?rideRequestId=${rideRequestId}`);
-    } else {
-      router.push("/dashboard/payment");
+  const handleContinueToPayment = async () => {
+    if (!rideRequestId || !totalAmount) {
+      showToast.error(
+        "Error",
+        "Missing ride request ID or total amount. Please try again."
+      );
+      return;
     }
-    onOpenChange(false);
+
+    setIsProcessingPayment(true);
+    try {
+      // Call the invoice API endpoint
+      const response = await updateRideRequestInvoice(rideRequestId, totalAmount);
+
+      if (response.success && response.authorizationUrl) {
+        // Redirect to Paystack checkout immediately
+        window.location.href = response.authorizationUrl;
+      } else {
+        showToast.error(
+          "Payment Error",
+          response.message || "Failed to initialize payment. Please try again."
+        );
+        setIsProcessingPayment(false);
+      }
+    } catch (error) {
+      console.error("Error initializing payment:", error);
+      showToast.error(
+        "Payment Error",
+        error instanceof Error
+          ? error.message
+          : "Failed to initialize payment. Please try again."
+      );
+      setIsProcessingPayment(false);
+    }
   };
 
   const handlePayOnDelivery = () => {
@@ -55,10 +87,20 @@ export function PaymentModal({
           <div className="w-full space-y-4">
             <Button
               onClick={handleContinueToPayment}
-              className="w-full bg-secondaryT hover:bg-secondaryT/90 text-primary-foreground font-medium py-6 rounded-xl transition-colors flex items-center justify-center gap-2"
+              disabled={isProcessingPayment || !rideRequestId || !totalAmount}
+              className="w-full bg-secondaryT hover:bg-secondaryT/90 text-primary-foreground font-medium py-6 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <CreditCard className="w-5 h-5" />
-              Continue to Payment
+              {isProcessingPayment ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-5 h-5" />
+                  Continue to Payment
+                </>
+              )}
             </Button>
 
             <Button

@@ -457,6 +457,7 @@ export function ShipmentDetailsForm() {
         open={showPaymentModal}
         onOpenChange={setShowPaymentModal}
         rideRequestId={rideRequestId}
+        totalAmount={pricingBreakdown?.total}
       />
     </div>
   );
