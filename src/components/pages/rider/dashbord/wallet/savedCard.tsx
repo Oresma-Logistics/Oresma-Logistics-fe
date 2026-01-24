@@ -53,11 +53,11 @@ export function BankCard() {
         <div className="flex justify-between flex-row items-center">
           <div>
             <h3 className="font-semibold">
-              {riderProfileData.rider.bankDetails.accountName}
+              {riderProfileData?.rider?.bankDetails?.accountName}
             </h3>
             <p className="text-[#AEAFB2] font-semibold">
               {maskAccountNumber(
-                riderProfileData.rider.bankDetails.accountNumber
+                riderProfileData?.rider?.bankDetails?.accountNumber || ""
               )}
             </p>
           </div>
@@ -65,7 +65,7 @@ export function BankCard() {
         </div>
         <div>
           <div className="flex justify-between flex-row items-center">
-            <div>{riderProfileData.rider.bankDetails.bankName}</div>
+            <div>{riderProfileData?.rider?.bankDetails?.bankName}</div>
             <div>
               <MoreVerticalIcon size={20} className="text-black" />
             </div>
