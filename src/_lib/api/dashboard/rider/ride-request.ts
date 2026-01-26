@@ -93,3 +93,54 @@ export async function updateRideRequestInvoice(
   );
   return response.data;
 }
+
+interface ApplyDiscountPayload {
+  code: string;
+  amount: number;
+}
+
+interface DiscountData {
+  originalAmount: number;
+  discountAmount: number;
+  finalAmount: number;
+  discount: {
+    _id: string;
+    code: string;
+    type: string;
+    value: number;
+    status: string;
+    validFrom: string;
+    validTo: string;
+    currentUses: number;
+    applicableVehicleTypes: string[];
+    createdBy: {
+      _id: string;
+      name: string;
+      email: string;
+      phone: string;
+      role: string;
+      isEmailVerified: boolean;
+      createdAt: string;
+      updatedAt: string;
+      __v: number;
+    };
+    description: string;
+    usageHistory: unknown[];
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+  };
+}
+
+interface ApplyDiscountResponse {
+  success: boolean;
+  message: string;
+  data: DiscountData;
+}
+
+export async function applyDiscount(
+  payload: ApplyDiscountPayload
+): Promise<ApplyDiscountResponse> {
+  const response = await axiosInstance2.post("/discounts/apply", payload);
+  return response.data;
+}

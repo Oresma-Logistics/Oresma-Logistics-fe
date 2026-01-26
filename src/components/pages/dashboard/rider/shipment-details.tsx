@@ -4,6 +4,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -15,13 +16,13 @@ import {
 import { CustomerInput } from "@/components/utility/form/customInput";
 import { EmailInput } from "@/components/utility/form/email-input";
 import { PlacesAutocompleteInput } from "@/components/utility/form/places-autocomplete-input";
-import { Loader2, MapPin, Calculator, Info } from "lucide-react";
+import { Loader2, MapPin, Calculator, Info, Tag } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { showToast } from "@/components/shared/toast";
 import { Breadcrumb } from "@/components/shared/dashboard/breadcrumb";
 import Cookies from "js-cookie";
 import { useEffect, useState, useCallback, useRef } from "react";
-import { createRideRequest } from "@/_lib/api/dashboard/rider/ride-request";
+import { createRideRequest, applyDiscount } from "@/_lib/api/dashboard/rider/ride-request";
 import { PaymentModal } from "./payment-modal";
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -78,6 +79,15 @@ export function ShipmentDetailsForm() {
   const [pricingBreakdown, setPricingBreakdown] = useState<PricingBreakdown | null>(null);
   const [isCalculatingFare, setIsCalculatingFare] = useState(false);
   const calculationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [promoCode, setPromoCode] = useState("");
+  const [isVerifyingPromo, setIsVerifyingPromo] = useState(false);
+  const [promoVerified, setPromoVerified] = useState(false);
+  const [promoDiscount, setPromoDiscount] = useState<number | null>(null);
+  const [discountData, setDiscountData] = useState<{
+    originalAmount: number;
+    discountAmount: number;
+    finalAmount: number;
+  } | null>(null);
 
   // Load Google Maps API for distance calculation
   const { isLoaded: isGoogleMapsLoaded } = useJsApiLoader({
@@ -164,6 +174,53 @@ export function ShipmentDetailsForm() {
     }, 800); // 800ms debounce
   }, [pickupLocation, dropoffLocation, vehicleType, isGoogleMapsLoaded]);
 
+  // Verify promo code
+  const handleVerifyPromoCode = async () => {
+    if (!promoCode.trim()) {
+      showToast.error("Error", "Please enter a promo code");
+      return;
+    }
+
+    if (!pricingBreakdown || !pricingBreakdown.total) {
+      showToast.error("Error", "Please calculate fare first before applying promo code");
+      return;
+    }
+
+    setIsVerifyingPromo(true);
+    try {
+      const response = await applyDiscount({
+        code: promoCode.trim().toUpperCase(),
+        amount: pricingBreakdown.total,
+      });
+
+      if (response.success && response.data) {
+        setPromoVerified(true);
+        setPromoDiscount(response.data.discountAmount);
+        setDiscountData({
+          originalAmount: response.data.originalAmount,
+          discountAmount: response.data.discountAmount,
+          finalAmount: response.data.finalAmount,
+        });
+        showToast.success("Success", response.message || "Promo code applied successfully!");
+      } else {
+        throw new Error(response.message || "Failed to apply discount");
+      }
+    } catch (error) {
+      console.error("Error verifying promo code:", error);
+      showToast.error(
+        "Error",
+        error instanceof Error
+          ? error.message
+          : "Failed to verify promo code. Please try again."
+      );
+      setPromoVerified(false);
+      setPromoDiscount(null);
+      setDiscountData(null);
+    } finally {
+      setIsVerifyingPromo(false);
+    }
+  };
+
   // Calculate fare when locations or vehicle type changes
   useEffect(() => {
     calculateFare();
@@ -213,11 +270,18 @@ export function ShipmentDetailsForm() {
         vehicleType: vehicleType.toLowerCase(), // Ensure lowercase (motorcycle, car, truck)
         pricing: {
           currency: "NGN",
-          total: pricingBreakdown?.total || 1500, // Use calculated price or fallback
+          total: discountData?.finalAmount 
+            ? discountData.finalAmount
+            : pricingBreakdown?.total || 1500, // Use discounted amount if available, otherwise calculated price or fallback
           baseFare: pricingBreakdown?.baseFare?.toString(),
           distanceFare: pricingBreakdown?.distanceFare?.toString(),
           timeFare: pricingBreakdown?.timeFare?.toString(),
           estimatedFare: pricingBreakdown?.total?.toString(),
+          ...(promoVerified && discountData && { 
+            promoCode: promoCode,
+            discount: discountData.discountAmount.toString(),
+            originalAmount: discountData.originalAmount.toString(),
+          }),
         },
         ...(driverId && { riderId: driverId }), // Add riderId if driverId is present
       };
@@ -424,6 +488,79 @@ export function ShipmentDetailsForm() {
                 )}
               </div>
             )}
+
+            {/* Promo Code Section */}
+            <div className="space-y-4 border-t pt-6">
+              <h3 className="text-xl font-semibold text-gray-900 border-b pb-2 flex items-center gap-2">
+                <Tag className="w-5 h-5" />
+                Promo Code
+              </h3>
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <Input
+                    type="text"
+                    placeholder="Enter promo code"
+                    value={promoCode}
+                    onChange={(e) => {
+                      setPromoCode(e.target.value);
+                      // Reset verification status when code changes
+                      if (promoVerified) {
+                        setPromoVerified(false);
+                        setPromoDiscount(null);
+                        setDiscountData(null);
+                      }
+                    }}
+                    className="h-11 bg-background border-input focus:border-primary transition-colors"
+                    disabled={isVerifyingPromo || promoVerified}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  onClick={handleVerifyPromoCode}
+                  disabled={isVerifyingPromo || !promoCode.trim() || promoVerified || !pricingBreakdown}
+                  className="px-6 bg-secondaryT hover:bg-secondaryT/90 text-primary-foreground font-semibold disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  {isVerifyingPromo ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : promoVerified ? (
+                    "Verified"
+                  ) : (
+                    "Verify"
+                  )}
+                </Button>
+              </div>
+              {promoVerified && discountData && (
+                <div className="mt-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-md border border-green-200 dark:border-green-800">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-green-700 dark:text-green-300 font-medium">
+                      Promo Code Applied ({promoCode})
+                    </span>
+                    <span className="text-green-700 dark:text-green-300 font-bold">
+                      -{formatNairaPrice(discountData.discountAmount)}
+                    </span>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-green-200 dark:border-green-800 flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      Original Amount
+                    </span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {formatNairaPrice(discountData.originalAmount)}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      New Total
+                    </span>
+                    <span className="font-bold text-lg text-green-700 dark:text-green-300">
+                      {formatNairaPrice(discountData.finalAmount)}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
           </CardContent>
 
           <CardFooter className="flex gap-6 justify-end pt-8 pb-6">
@@ -458,7 +595,11 @@ export function ShipmentDetailsForm() {
         open={showPaymentModal}
         onOpenChange={setShowPaymentModal}
         rideRequestId={rideRequestId}
-        totalAmount={pricingBreakdown?.total}
+        totalAmount={
+          discountData?.finalAmount 
+            ? discountData.finalAmount
+            : pricingBreakdown?.total
+        }
       />
     </div>
   );

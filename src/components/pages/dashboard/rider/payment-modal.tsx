@@ -3,8 +3,7 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { DialogTitle } from "@radix-ui/react-dialog";
-import { CreditCard, Package, CheckCircle, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { CreditCard, CheckCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { updateRideRequestInvoice } from "@/_lib/api/dashboard/rider/ride-request";
 import { showToast } from "@/components/shared/toast";
@@ -22,8 +21,8 @@ export function PaymentModal({
   rideRequestId,
   totalAmount,
 }: PaymentModalProps) {
-  const router = useRouter();
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [canClose, setCanClose] = useState(false);
 
   const handleContinueToPayment = async () => {
     if (!rideRequestId || !totalAmount) {
@@ -35,6 +34,7 @@ export function PaymentModal({
     }
 
     setIsProcessingPayment(true);
+    setCanClose(true); // Allow modal to close after clicking continue
     try {
       // Call the invoice API endpoint
       const response = await updateRideRequestInvoice(rideRequestId, totalAmount);
@@ -61,16 +61,31 @@ export function PaymentModal({
     }
   };
 
-  const handlePayOnDelivery = () => {
-    // Navigate to my requests page
-    router.push("/dashboard/my-requests");
-    onOpenChange(false);
+  const handleOpenChange = (newOpen: boolean) => {
+    // Only allow closing if canClose is true (user clicked continue to payment)
+    if (!newOpen && !canClose) {
+      return; // Prevent closing
+    }
+    onOpenChange(newOpen);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTitle></DialogTitle>
-      <DialogContent className="sm:max-w-[440px] p-8 rounded-3xl">
+      <DialogContent 
+        className="sm:max-w-[440px] p-8 rounded-3xl"
+        showCloseButton={canClose}
+        onInteractOutside={(e) => {
+          if (!canClose) {
+            e.preventDefault();
+          }
+        }}
+        onEscapeKeyDown={(e) => {
+          if (!canClose) {
+            e.preventDefault();
+          }
+        }}
+      >
         <div className="flex flex-col items-center space-y-6">
           {/* Success Icon */}
           <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
@@ -101,15 +116,6 @@ export function PaymentModal({
                   Continue to Payment
                 </>
               )}
-            </Button>
-
-            <Button
-              onClick={handlePayOnDelivery}
-              variant="outline"
-              className="w-full bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 font-medium py-6 rounded-xl transition-colors flex items-center justify-center gap-2"
-            >
-              <Package className="w-5 h-5" />
-              Pay on Delivery
             </Button>
           </div>
         </div>
