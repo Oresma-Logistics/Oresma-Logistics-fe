@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { Users, ThumbsUp, Package } from "lucide-react";
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 
 function useCountUp(end: number, duration = 2000) {
@@ -38,14 +37,15 @@ export function HeroSection() {
 
   return (
     <section id="home" className="relative pt-20 max-lg:pb-15">
-      {/* Hero Image with Overlay */}
+      {/* Hero Video with Overlay */}
       <div className="relative h-[500px] md:h-[600px] ">
-        <Image
-          src="https://res.cloudinary.com/duyhha3mz/image/upload/v1760891284/Hero_nwpufp.jpg"
-          alt="Oresma Logistics"
-          fill
-          priority
-          className="w-full h-full object-cover animate-zoom-in"
+        <video
+          src="https://res.cloudinary.com/dysloawon/video/upload/v1769580594/WhatsApp_Video_2026-01-27_at_4.04.27_PM_w2rxzf.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover animate-zoom-in"
         />
 
         {/* Orange accent bar */}
