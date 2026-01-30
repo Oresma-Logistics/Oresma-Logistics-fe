@@ -11,6 +11,8 @@ import { MotorcycleRidersResponse } from "@/_lib/type/auth/motorcycle-riders";
 import SkeletonCardList from "@/components/shared/skeleton/card-list-skeleton";
 import { calculateRidePrice } from "@/_lib/utils/pricing";
 import { useEffect, useState } from "react";
+import { Profile } from "@/_lib/api/auth/profile";
+import { ProfileUser } from "@/_lib/type/auth/users";
 
 const driversData = [
   {
@@ -72,15 +74,22 @@ export function AvailableRide() {
   const vehicle = params.get("vehicle");
   const [routeDistance, setRouteDistance] = useState<number | null>(null);
 
+  // Fetch user profile to get state
+  const { data: profileData } = useQuery<ProfileUser>({
+    queryKey: ["userProfile"],
+    queryFn: Profile,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
   // Fetch motorcycle riders when keke is selected
   const {
     data: motorcycleRidersData,
     isLoading: isLoadingMotorcycleRiders,
     isError: isMotorcycleRidersError,
   } = useQuery<MotorcycleRidersResponse>({
-    queryKey: ["motorcycleRiders"],
-    queryFn: getMotorcycleRiders,
-    enabled: vehicle === "keke",
+    queryKey: ["motorcycleRiders", profileData?.user?.state],
+    queryFn: () => getMotorcycleRiders(profileData?.user?.state),
+    enabled: vehicle === "keke" && !!profileData,
   });
 
   // Read route distance from localStorage

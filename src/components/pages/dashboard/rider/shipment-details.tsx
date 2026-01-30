@@ -24,7 +24,7 @@ import Cookies from "js-cookie";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { createRideRequest, applyDiscount } from "@/_lib/api/dashboard/rider/ride-request";
 import { PaymentModal } from "./payment-modal";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   calculateLogisticsPrice,
   calculateRouteDistance,
@@ -32,6 +32,8 @@ import {
   type PricingBreakdown,
 } from "@/_lib/utils/pricing";
 import { useJsApiLoader } from "@react-google-maps/api";
+import { Profile } from "@/_lib/api/auth/profile";
+import { ProfileUser } from "@/_lib/type/auth/users";
 
 const formSchema = z.object({
   // Pickup and Dropoff Locations
@@ -109,6 +111,13 @@ export function ShipmentDetailsForm() {
   const pickupLocation = watch("pickupLocation");
   const dropoffLocation = watch("dropoffLocation");
 
+  // Fetch user profile to get state
+  const { data: profileData } = useQuery<ProfileUser>({
+    queryKey: ["userProfile"],
+    queryFn: Profile,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
   const createRequestMutation = useMutation({
     mutationFn: createRideRequest,
     onSuccess: (data) => {
@@ -161,7 +170,23 @@ export function ShipmentDetailsForm() {
             routeData.timeMinutes,
             vehicleType
           );
-          setPricingBreakdown(breakdown);
+          
+          // Apply FCT discount: divide distance fare by 2 if user state is FCT
+          let adjustedBreakdown = { ...breakdown };
+          if (profileData?.user?.state === "FCT") {
+            adjustedBreakdown.distanceFare = Math.round(breakdown.distanceFare / 2);
+            // Recalculate total with adjusted distance fare
+            adjustedBreakdown.total = adjustedBreakdown.baseFare + adjustedBreakdown.distanceFare + adjustedBreakdown.timeFare + adjustedBreakdown.serviceFee;
+            // Apply minimum fare if calculated total is lower
+            const rates = vehicleType.toLowerCase() === "car" 
+              ? { minimumFare: 2500 }
+              : vehicleType.toLowerCase() === "truck" || vehicleType.toLowerCase() === "lorry"
+              ? { minimumFare: 5000 }
+              : { minimumFare: 1200 };
+            adjustedBreakdown.total = Math.max(adjustedBreakdown.total, rates.minimumFare);
+          }
+          
+          setPricingBreakdown(adjustedBreakdown);
         } else {
           setPricingBreakdown(null);
         }
@@ -172,7 +197,7 @@ export function ShipmentDetailsForm() {
         setIsCalculatingFare(false);
       }
     }, 800); // 800ms debounce
-  }, [pickupLocation, dropoffLocation, vehicleType, isGoogleMapsLoaded]);
+  }, [pickupLocation, dropoffLocation, vehicleType, isGoogleMapsLoaded, profileData?.user?.state]);
 
   // Verify promo code
   const handleVerifyPromoCode = async () => {
