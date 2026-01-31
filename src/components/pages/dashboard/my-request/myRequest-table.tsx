@@ -1,12 +1,33 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
-import { getMyRequest } from "@/_lib/api/dashboard/rider/ride-request";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getMyRequest, cancelUserRideRequest } from "@/_lib/api/dashboard/rider/ride-request";
 import SkeletonCardList from "@/components/shared/skeleton/card-list-skeleton";
 import { AllUserRequests } from "@/_lib/type/request/user-request";
 import { BaseTable } from "@/components/shared/table/table-style";
 import { StatusBadge } from "@/components/shared/dashboard/status-card";
+import { Button } from "@/components/ui/button";
+import { showToast } from "@/components/shared/toast";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function MyRequestTable() {
+  const queryClient = useQueryClient();
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [reason, setReason] = useState("");
+  const [note, setNote] = useState("");
+  
   const {
     data: AllUserRequest,
     isPending,
@@ -16,6 +37,55 @@ export default function MyRequestTable() {
     queryFn: getMyRequest,
     queryKey: ["UserRequests"],
   });
+
+  const cancelMutation = useMutation({
+    mutationFn: ({ rideRequestId, payload }: { rideRequestId: string; payload: { reason?: string; note?: string } }) =>
+      cancelUserRideRequest(rideRequestId, payload),
+    onSuccess: (data) => {
+      if (data.success) {
+        showToast.success("Request Cancelled", data.message || "Your ride request has been cancelled successfully");
+        queryClient.invalidateQueries({ queryKey: ["UserRequests"] });
+        setCancelDialogOpen(false);
+        setReason("");
+        setNote("");
+        setSelectedRequestId(null);
+      } else {
+        showToast.error("Error", data.message || "Failed to cancel request");
+      }
+    },
+    onError: (error: Error) => {
+      showToast.error("Error", error.message || "Failed to cancel request. Please try again.");
+    },
+  });
+
+  const handleCancelClick = (rideRequestId: string) => {
+    setSelectedRequestId(rideRequestId);
+    setCancelDialogOpen(true);
+  };
+
+  const handleCancelConfirm = () => {
+    if (!selectedRequestId) {
+      showToast.error("Error", "Request ID is missing");
+      return;
+    }
+    const payload: { reason?: string; note?: string } = {};
+    if (reason.trim()) {
+      payload.reason = reason.trim();
+    }
+    if (note.trim()) {
+      payload.note = note.trim();
+    }
+    cancelMutation.mutate({
+      rideRequestId: selectedRequestId,
+      payload,
+    });
+  };
+
+  // Determine if a request can be cancelled
+  const canCancel = (status: string) => {
+    const cancellableStatuses = ["pending", "payment_failed", "assigned"];
+    return cancellableStatuses.includes(status.toLowerCase());
+  };
   if (isPending) {
     return <SkeletonCardList />;
   }
@@ -33,6 +103,69 @@ export default function MyRequestTable() {
   if (!isPending && !isError && AllUserRequest.count > 0) {
     return (
       <div>
+        {/* Cancel Request Dialog */}
+        <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Cancel Ride Request</DialogTitle>
+              <DialogDescription>
+                Please provide a reason and note for cancelling this request.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="reason">Reason (Optional)</Label>
+                <Input
+                  id="reason"
+                  placeholder="e.g., Changed pickup location"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  disabled={cancelMutation.isPending}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="note">Note (Optional)</Label>
+                <Textarea
+                  id="note"
+                  placeholder="e.g., Will create a new request"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  disabled={cancelMutation.isPending}
+                  rows={4}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setCancelDialogOpen(false);
+                  setReason("");
+                  setNote("");
+                  setSelectedRequestId(null);
+                }}
+                disabled={cancelMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleCancelConfirm}
+                disabled={cancelMutation.isPending}
+              >
+                {cancelMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Cancelling...
+                  </>
+                ) : (
+                  "Confirm Cancellation"
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <BaseTable
           columns={[
             { key: "vehicleType", label: "Vehicle type" },
@@ -81,6 +214,32 @@ export default function MyRequestTable() {
           data={AllUserRequest.rideRequests}
           count={AllUserRequest.count}
           showCountBadge={true}
+          rowActions2={(row) => {
+            if (!canCancel(row.status)) {
+              return null;
+            }
+            return (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCancelClick(row._id);
+                }}
+                disabled={cancelMutation.isPending}
+                className="w-full"
+              >
+                {cancelMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Cancelling...
+                  </>
+                ) : (
+                  "Cancel Request"
+                )}
+              </Button>
+            );
+          }}
           //   onRowClick={(row) =>
           //     navigate.push(`/dashboard/my-requests/${row._id}`)
           //   }

@@ -144,3 +144,39 @@ export async function applyDiscount(
   const response = await axiosInstance2.post("/discounts/apply", payload);
   return response.data;
 }
+
+interface CancelRideRequestPayload {
+  reason?: string;
+  note?: string;
+}
+
+interface CancelRideRequestResponse {
+  success: boolean;
+  message: string;
+  rideRequest?: {
+    _id: string;
+    status: string;
+  };
+}
+
+// Admin endpoint - keep existing
+export async function cancelRideRequest(
+  rideRequestId: string
+): Promise<CancelRideRequestResponse> {
+  const response = await axiosInstance2.patch(
+    `/ride-requests/${rideRequestId}/cancel`
+  );
+  return response.data;
+}
+
+// User endpoint - new function for user cancellation
+export async function cancelUserRideRequest(
+  rideRequestId: string,
+  payload: CancelRideRequestPayload
+): Promise<CancelRideRequestResponse> {
+  const response = await axiosInstance2.patch(
+    `/auth/ride-requests/${rideRequestId}/cancel`,
+    payload
+  );
+  return response.data;
+}
