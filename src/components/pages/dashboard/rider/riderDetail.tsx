@@ -182,8 +182,8 @@ export function DriverDetailsModal({
           </Button> */}
           <Button
             onClick={handleContinue}
-            disabled={isSendingRequest || !origin || !destination}
-            className="w-full bg-[#FBB298] hover:bg-secondaryT text-primaryT hover:text-white border-2 border-gray-200 font-medium py-6 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isSendingRequest}
+            className="w-full bg-secondaryT hover:bg-secondaryT/90 text-white font-medium py-6 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Continue
           </Button>

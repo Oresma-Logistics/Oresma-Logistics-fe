@@ -289,7 +289,7 @@ function RiderCard({ driver }: RiderCardProps) {
         {/* Book Ride Button */}
         <Button
           onClick={handleBookRide}
-          className="w-full bg-[#FBB298] hover:bg-secondaryT text-gray-900 hover:text-white font-medium shadow-md py-6 rounded-xl transition-colors"
+          className="w-full bg-secondaryT hover:bg-secondaryT/90 text-white font-medium shadow-md py-6 rounded-xl transition-colors"
         >
           Book Ride
         </Button>

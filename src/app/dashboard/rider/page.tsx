@@ -22,13 +22,16 @@ export default function BookServicePage() {
       /> */}
 
       <div className="flex flex-col-reverse gap-6 overflow-x-auto lg:flex-row">
-        <Suspense
-          fallback={
-            <div className="h-96 w-full animate-pulse rounded-lg bg-muted lg:w-80" />
-          }
-        >
-          <AvailableRide />
-        </Suspense>
+        {/* Hide AvailableRide on mobile when vehicle is selected (it will be on separate page) */}
+        <div className="hidden lg:block">
+          <Suspense
+            fallback={
+              <div className="h-96 w-full animate-pulse rounded-lg bg-muted lg:w-80" />
+            }
+          >
+            <AvailableRide />
+          </Suspense>
+        </div>
 
         <div className="min-w-0 flex-1">
           <Suspense fallback={""}>

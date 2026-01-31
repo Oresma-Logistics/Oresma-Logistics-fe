@@ -60,6 +60,7 @@ export function Booking() {
   } | null>(null);
   const [shouldCalculate, setShouldCalculate] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const savedOrigin = Cookies.get("routeOrigin");
@@ -67,6 +68,16 @@ export function Booking() {
 
     if (savedOrigin) setOrigin(savedOrigin);
     if (savedDestination) setDestination(savedDestination);
+
+    // Check if mobile on mount and window resize
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   console.log(params2.get("vehicle"));
@@ -89,8 +100,15 @@ export function Booking() {
 
   const handleFindDriver = () => {
     if (origin && destination && selectedVehicle) {
-      params.set("vehicle", selectedVehicle);
-      naviagate.push(`?${params.toString()}`);
+      if (isMobile) {
+        // Navigate to separate page on mobile
+        params.set("vehicle", selectedVehicle);
+        naviagate.push(`/dashboard/rider/available-rides?${params.toString()}`);
+      } else {
+        // Update URL params on desktop (existing behavior)
+        params.set("vehicle", selectedVehicle);
+        naviagate.push(`?${params.toString()}`);
+      }
     } else {
       alert("Please enter both locations and select a vehicle");
     }

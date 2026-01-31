@@ -43,14 +43,14 @@ export function VehicleSelector({
               <Button
                 onClick={() => onSelectVehicle(vehicle.id)}
                 className={`w-full ${
-                  selectedVehicle == vehicle.id
+                  selectedVehicle === vehicle.id
                     ? "bg-secondaryT/80"
                     : "bg-secondaryT"
                 } hover:bg-secondaryT/80 `}
                 disabled={!vehicle.available}
               >
                 {vehicle.available
-                  ? selectedVehicle
+                  ? selectedVehicle === vehicle.id
                     ? "Selected"
                     : "Choose ride"
                   : "Coming soon"}
