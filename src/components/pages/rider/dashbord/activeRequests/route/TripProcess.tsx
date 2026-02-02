@@ -271,7 +271,7 @@ export function TripProcess({ id }: { id: string }) {
           <div className="flex gap-5">
             {/* Location Headers */}
             {data.rideRequest.status === "assigned" && <StartProcess id={id} />}
-            {data.rideRequest.status !== "completed" && <EndProcess id={id} />}
+            {data.rideRequest.status !== "completed" && data.rideRequest.status !== "in-progress" && <EndProcess id={id} />}
             {/* Timeline Section */}
             {data.rideRequest.status === "in-progress" && <FinshProcess />}
             {data.rideRequest.status === "completed" && (
