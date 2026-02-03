@@ -12,9 +12,10 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   id: string;
+  secretCode: string;
 }
 
-export function RouteProcess({ open, onOpenChange, id }: Props) {
+export function RouteProcess({ open, onOpenChange, id, secretCode }: Props) {
   // ❗ Always call hooks unconditionally
   const {
     data: Result,
@@ -22,17 +23,30 @@ export function RouteProcess({ open, onOpenChange, id }: Props) {
     isError,
     error: Error,
   } = useQuery({
-    queryKey: ["startAssignment", id],
-    queryFn: () => FinishAssignmentRequest(id),
-    enabled: open, // 👈 ensures it only runs when open = true
+    queryKey: ["startAssignment", id, secretCode],
+    queryFn: () => FinishAssignmentRequest(id, secretCode),
+    enabled: open && secretCode.length === 4, // 👈 ensures it only runs when open = true and code is provided
   });
 
   if (!open) return null;
 
+  const handleOpenChange = (newOpen: boolean) => {
+    // Prevent closing while processing
+    if (isPending) {
+      return;
+    }
+    onOpenChange(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTitle></DialogTitle>
-      <DialogContent className="p-5 py-15">
+      <DialogContent 
+        className="p-5 py-15" 
+        showCloseButton={false}
+        onInteractOutside={(e) => isPending && e.preventDefault()} 
+        onEscapeKeyDown={(e) => isPending && e.preventDefault()}
+      >
         {isPending && (
           <div className="flex flex-col items-center">
             <div className="mb-4">
@@ -41,8 +55,7 @@ export function RouteProcess({ open, onOpenChange, id }: Props) {
                 Processing.......
               </h3>
             </div>
-            <div>The admin will get back to you</div>
-            <div>Please check your mail box</div>
+            
           </div>
         )}
 

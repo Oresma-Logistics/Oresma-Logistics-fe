@@ -45,9 +45,10 @@ export async function StartAssignmentRequest(id: string) {
   });
   return response.data;
 }
-export async function FinishAssignmentRequest(id: string) {
+export async function FinishAssignmentRequest(id: string, secretCode: string) {
   const response = await axiosInstance2.patch(`/ride-requests/${id}/status`, {
     status: "completed",
+    secretCode: secretCode,
   });
   return response.data;
 }

@@ -21,6 +21,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 import { useState } from "react";
 
@@ -43,6 +52,8 @@ export interface Stop {
 export function TripProcess({ id }: { id: string }) {
   const [openModal, setOpenModal] = useState(false);
   const [isDialog, setDialog] = useState(false);
+  const [secretCodeDialog, setSecretCodeDialog] = useState(false);
+  const [secretCode, setSecretCode] = useState("");
   const rawUser = Cookies.get("user");
   const userData: User | null = rawUser ? JSON.parse(rawUser) : null;
 
@@ -171,7 +182,7 @@ export function TripProcess({ id }: { id: string }) {
             <Button
               onClick={() => {
                 setDialog(false);
-                setOpenModal(true);
+                setSecretCodeDialog(true);
               }}
               className="cursor-pointer"
             >
@@ -289,12 +300,66 @@ export function TripProcess({ id }: { id: string }) {
               </div>
             )}
           </div>
+          {/* Secret Code Input Dialog */}
+          <Dialog open={secretCodeDialog} onOpenChange={setSecretCodeDialog}>
+            <DialogContent className="sm:max-w-[400px]">
+              <DialogHeader>
+                <DialogTitle>Enter Secret Code</DialogTitle>
+                <DialogDescription>
+                  Please enter the 4-digit secret code to finish this trip.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="secretCode">Secret Code</Label>
+                  <Input
+                    id="secretCode"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={4}
+                    placeholder="Enter 4-digit code"
+                    value={secretCode}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "").slice(0, 4);
+                      setSecretCode(value);
+                    }}
+                    className="text-center text-2xl tracking-widest"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSecretCodeDialog(false);
+                    setSecretCode("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (secretCode.length === 4) {
+                      setSecretCodeDialog(false);
+                      setOpenModal(true);
+                    }
+                  }}
+                  disabled={secretCode.length !== 4}
+                >
+                  Continue
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           <RouteProcess
             open={openModal}
             onOpenChange={() => {
               setOpenModal(false);
+              setSecretCode("");
             }}
             id={id}
+            secretCode={secretCode}
           />
         </div>
       </div>
