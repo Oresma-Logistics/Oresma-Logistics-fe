@@ -14,4 +14,5 @@ export type CreateRiderPayload = {
   password: string;
   vehicleType: string;
   isVendor: boolean;
+  state?: string;
 };

@@ -94,6 +94,7 @@ export interface Rider {
     email: string;
     phone: string;
     role: string;
+    state?: string;
     isEmailVerified: boolean;
     createdAt: string;
     updatedAt: string;

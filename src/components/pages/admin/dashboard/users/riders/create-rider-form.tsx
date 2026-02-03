@@ -29,6 +29,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CreateRiderPayload } from "@/_lib/type/auth";
 import { CreateRider } from "@/_lib/api/admin/rider/create-rider";
 import { showToast } from "@/components/shared/toast";
+import { nigerianStates } from "@/_lib/data/nigerian-states";
 
 interface RiderSignupModalProps {
   isOpen: boolean;
@@ -59,6 +60,7 @@ export default function RiderSignupModal({
       .min(7, "Minimum of 8 characters"),
     vehicleType: z.string().min(1, "Vehicle type is required"),
     isVendor: z.boolean(),
+    state: z.string().optional(),
   });
 
   type RiderFormData = z.infer<typeof signUpScheme>;
@@ -188,6 +190,37 @@ export default function RiderSignupModal({
                 {errors.vehicleType && (
                   <p className="text-sm text-red-500">
                     {errors.vehicleType.message}
+                  </p>
+                )}
+              </div>
+
+              {/* State Field */}
+              <div className="space-y-2">
+                <Label htmlFor="state">State (Optional)</Label>
+                <Controller
+                  name="state"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value || ""}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {nigerianStates.map((state) => (
+                          <SelectItem key={state} value={state}>
+                            {state}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.state && (
+                  <p className="text-sm text-red-500">
+                    {errors.state.message}
                   </p>
                 )}
               </div>
