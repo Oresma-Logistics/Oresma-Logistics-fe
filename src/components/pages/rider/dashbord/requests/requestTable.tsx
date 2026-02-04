@@ -16,9 +16,22 @@ import { Button } from "@/components/ui/button";
 import { RideRequest } from "@/_lib/type/request/rider-request";
 import { StatusBadge } from "@/components/shared/dashboard/status-card";
 import { showToast } from "@/components/shared/toast";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function RequestTable() {
   const queryClient = useQueryClient();
+  const [secretCodeDialog, setSecretCodeDialog] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [secretCode, setSecretCode] = useState("");
   const {
     data: AssignmentRequest,
     isPending,
@@ -70,39 +83,44 @@ export function RequestTable() {
     );
   };
 
-  const EndTrip = ({ id }: { id: string }) => {
-    const mutation = useMutation({
-      mutationFn: FinishAssignmentRequest,
-      mutationKey: ["FinishAssignment"],
-      onSuccess: async () => {
-        showToast.success("Trip ended successfully");
-        // Invalidate queries to refresh data
+  const endTripMutation = useMutation({
+    mutationFn: ({ id, secretCode }: { id: string; secretCode: string }) =>
+      FinishAssignmentRequest(id, secretCode),
+    mutationKey: ["FinishAssignment"],
+    onSuccess: async () => {
+      showToast.success("Trip ended successfully");
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries({
+        queryKey: ["AvaliableRides"],
+      });
+      if (selectedRequestId) {
         await queryClient.invalidateQueries({
-          queryKey: ["AvaliableRides"],
+          queryKey: ["Single Reques for Rider", selectedRequestId],
         });
-        await queryClient.invalidateQueries({
-          queryKey: ["Single Reques for Rider", id],
-        });
-      },
-      onError() {
-        showToast.error("Failed to End Trip");
-      },
-    });
+      }
+      setSecretCodeDialog(false);
+      setSelectedRequestId(null);
+      setSecretCode("");
+    },
+    onError() {
+      showToast.error("Failed to End Trip");
+    },
+  });
 
-    const handlerSubmit = async () => {
-      await mutation.mutateAsync(id);
+  const EndTrip = ({ id }: { id: string }) => {
+    const handlerSubmit = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setSelectedRequestId(id);
+      setSecretCodeDialog(true);
     };
 
     return (
       <Button
-        onClick={(e) => {
-          e.stopPropagation();
-          handlerSubmit();
-        }}
+        onClick={handlerSubmit}
         className="cursor-pointer"
-        disabled={mutation.isPending}
+        disabled={endTripMutation.isPending}
       >
-        {mutation.isPending ? "Ending Trip..." : "End Trip"}
+        {endTripMutation.isPending ? "Ending Trip..." : "End Trip"}
       </Button>
     );
   };
@@ -146,6 +164,12 @@ export function RequestTable() {
     return <div className="text-red-500">No Assignment Requests</div>;
   }
 
+  const handleConfirmFinish = () => {
+    if (selectedRequestId && secretCode.length === 4) {
+      endTripMutation.mutate({ id: selectedRequestId, secretCode });
+    }
+  };
+
   return (
     <div>
       <BaseTable
@@ -186,6 +210,56 @@ export function RequestTable() {
           navigate.push(`/rider/dashboard/requests/${row._id}`)
         }
       />
+
+      {/* Secret Code Input Dialog */}
+      <Dialog open={secretCodeDialog} onOpenChange={setSecretCodeDialog}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Enter Secret Code</DialogTitle>
+            <DialogDescription>
+              Please enter the 4-digit secret code to finish this trip.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="secretCode">Secret Code</Label>
+              <Input
+                id="secretCode"
+                type="text"
+                inputMode="numeric"
+                maxLength={4}
+                placeholder="Enter 4-digit code"
+                value={secretCode}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "").slice(0, 4);
+                  setSecretCode(value);
+                }}
+                className="text-center text-2xl tracking-widest"
+                disabled={endTripMutation.isPending}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSecretCodeDialog(false);
+                setSelectedRequestId(null);
+                setSecretCode("");
+              }}
+              disabled={endTripMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmFinish}
+              disabled={endTripMutation.isPending || secretCode.length !== 4}
+            >
+              {endTripMutation.isPending ? "Finishing..." : "Finish Trip"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
