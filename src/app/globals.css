@@ -132,3 +132,8 @@
   background-color: #f75720;
   border-radius: 10px;
 }
+
+/* Google Places Autocomplete dropdown - ensure it appears above cards and modals */
+.pac-container {
+  z-index: 9999;
+}

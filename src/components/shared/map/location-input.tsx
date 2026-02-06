@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MapPin, Loader2 } from "lucide-react";
-import { useJsApiLoader } from "@react-google-maps/api";
+import { usePlacesAutocomplete } from "@/hooks/usePlacesAutocomplete";
 
 interface LocationInputProps {
   value: string;
@@ -16,8 +16,6 @@ interface LocationInputProps {
   isLoading?: boolean;
 }
 
-const libraries: "places"[] = ["places"];
-
 export function LocationInput({
   value,
   onChange,
@@ -28,51 +26,57 @@ export function LocationInput({
   isLoading = false,
 }: LocationInputProps) {
   const iconColor = icon === "start" ? "text-yellow-500" : "text-gray-900";
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Load Google Maps API
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-    libraries,
-  });
+  const {
+    isLoaded,
+    predictions,
+    isLoadingPredictions,
+    fetchPredictions,
+    getPlaceDetails,
+    clearPredictions,
+  } = usePlacesAutocomplete(containerRef);
 
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const next = e.target.value;
+      onChange(next);
+      fetchPredictions(next);
+    },
+    [onChange, fetchPredictions]
+  );
+
+  const handleSelect = useCallback(
+    async (placeId: string) => {
+      clearPredictions();
+      const details = await getPlaceDetails(placeId);
+      const displayValue = details?.formatted_address || details?.name || "";
+      if (displayValue) onChange(displayValue);
+    },
+    [getPlaceDetails, onChange, clearPredictions]
+  );
+
+  // Close dropdown on click outside
   useEffect(() => {
-    if (isLoaded && inputRef.current && !autocompleteRef.current) {
-      // Initialize Autocomplete
-      autocompleteRef.current = new window.google.maps.places.Autocomplete(
-        inputRef.current,
-        {
-          types: ["address"],
-          fields: ["formatted_address", "geometry"],
-          componentRestrictions: { country: "ng" }, // Restrict to Nigeria
-        }
-      );
-
-      // Listen for place selection
-      autocompleteRef.current.addListener("place_changed", () => {
-        const place = autocompleteRef.current?.getPlace();
-        if (place?.formatted_address) {
-          onChange(place.formatted_address);
-        }
-      });
-
-      setIsGoogleLoaded(true);
-    }
-
-    // Cleanup
-    return () => {
-      if (autocompleteRef.current) {
-        window.google?.maps?.event?.clearInstanceListeners(
-          autocompleteRef.current
-        );
+    const handleClickOutside = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        clearPredictions();
       }
     };
-  }, [isLoaded, onChange]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [clearPredictions]);
 
   return (
-    <div className="space-y-2">
+    <div ref={wrapperRef} className="space-y-2 relative">
+      {/* Hidden div required by Google PlacesService for attributions */}
+      <div
+        ref={containerRef}
+        className="absolute w-px h-px overflow-hidden"
+        aria-hidden
+        tabIndex={-1}
+      />
       <label className="text-sm font-medium text-foreground">{label}</label>
       <div className="flex gap-2">
         <div className="relative flex-1">
@@ -80,13 +84,44 @@ export function LocationInput({
             className={`absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 z-10 ${iconColor}`}
           />
           <Input
-            ref={inputRef}
             value={value}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={handleInputChange}
+            onFocus={() => value && fetchPredictions(value)}
             placeholder={placeholder}
             className="pl-10"
             disabled={isLoading || !isLoaded}
+            spellCheck={false}
+            autoComplete="off"
           />
+          {/* Custom dropdown: addresses + establishments */}
+          {(predictions.length > 0 || isLoadingPredictions) && (
+            <ul
+              className="absolute top-full left-0 right-0 z-[9999] mt-1 max-h-60 overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+              role="listbox"
+            >
+              {isLoadingPredictions && predictions.length === 0 ? (
+                <li className="px-3 py-2 text-sm text-muted-foreground flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Searching...
+                </li>
+              ) : (
+                predictions.map((p) => (
+                  <li
+                    key={p.place_id}
+                    role="option"
+                    className="relative flex cursor-pointer select-none items-center rounded-sm px-3 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleSelect(p.place_id);
+                    }}
+                  >
+                    <MapPin className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="truncate">{p.description}</span>
+                  </li>
+                ))
+              )}
+            </ul>
+          )}
         </div>
         {icon === "destination" && onSubmit && (
           <Button
