@@ -175,7 +175,16 @@ export function RequestTable() {
       <BaseTable
         columns={[
           { key: "vehicleType", label: "Vehicle type" },
-          { key: "_id", label: "Vehicle ID" },
+          {
+            key: "pricing.total",
+            label: "Total",
+            render: (value, row) => {
+              const total = row?.pricing?.total;
+              const currency = row?.pricing?.currency ?? "NGN";
+              if (total == null || total === "") return "—";
+              return `${currency === "NGN" ? "₦" : ""}${Number(total).toLocaleString()}`;
+            },
+          },
           { key: "pickup.address", label: "Pick up location" },
           { key: "dropoff.address", label: "Final destination" },
           { key: "userId.name", label: "Customer" },
