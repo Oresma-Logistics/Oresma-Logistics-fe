@@ -127,6 +127,7 @@ export function RequestTable() {
 
   const RowActions = ({ row }: { row: RideRequest }) => {
     const router = useRouter();
+    if (row.status === "cancelled") return null;
     return (
       <div className="flex gap-1 sm:gap-2">
         {row.status !== "assigned" &&
