@@ -5,6 +5,7 @@ import { cn } from "@/_lib/utils";
 import Cookies from "js-cookie";
 import { Header } from "@/components/shared/headers/header";
 import { User } from "@/_lib/type/cookies";
+import { BottomNav } from "@/components/shared/navigation/bottom-nav";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -52,7 +53,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             }
           }}
         />
-        <div className="p-6">{children}</div>
+        <div className={cn("p-6", "pb-20 lg:pb-6")}>{children}</div>
+        <BottomNav />
       </div>
     </div>
   );

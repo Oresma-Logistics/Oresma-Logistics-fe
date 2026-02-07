@@ -1,11 +1,12 @@
 "use client";
 import RiderSideBar from "./AppSideBar";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { cn } from "@/_lib/utils";
 import { Header2 } from "@/components/shared/headers/header";
 import { User } from "@/_lib/type/cookies";
 import Cookies from "js-cookie";
-import { useEffect } from "react";
+import { BottomNav } from "@/components/shared/navigation/bottom-nav";
+import { LayoutDashboard, MapPin, User as UserIcon } from "lucide-react";
 export function RiderDashbboardLayout({
   children,
 }: {
@@ -55,7 +56,26 @@ export function RiderDashbboardLayout({
           }}
           bgcolor="#021533"
         />
-        <div className="p-6">{children}</div>
+        <div className={cn("p-6", "pb-20 lg:pb-6")}>{children}</div>
+        <BottomNav
+          items={[
+            {
+              label: "Dashboard",
+              href: "/rider/dashboard",
+              icon: <LayoutDashboard className="h-5 w-5" />,
+            },
+            {
+              label: "Rides",
+              href: "/rider/dashboard/requests",
+              icon: <MapPin className="h-5 w-5" />,
+            },
+            {
+              label: "Account",
+              href: "/rider/dashboard/profile",
+              icon: <UserIcon className="h-5 w-5" />,
+            },
+          ]}
+        />
       </div>
     </div>
   );

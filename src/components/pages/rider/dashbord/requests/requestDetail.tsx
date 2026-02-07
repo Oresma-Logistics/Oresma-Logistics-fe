@@ -166,34 +166,57 @@ export function RequestDetail({ id }: { id: string }) {
     return <div className="text-red-500">{Error.message}</div>;
   }
 
+  // TODO: Replace with your notify-user endpoint when ready
+  const handleNotifyUser = (rideRequestId: string) => {
+    showToast.success("Notify user", "Endpoint will be connected here.");
+  };
+
   if (!isPending && !isError) {
+    const request = data.rideRequest;
+    const isCancelled = request.status === "cancelled";
+
     return (
-      <RequestDetailWrapper request={data.rideRequest}>
-        {data.rideRequest.status !== "assigned" &&
-          data.rideRequest.status !== "in-progress" &&
-          data.rideRequest.status !== "completed" && (
-            <div>
+      <RequestDetailWrapper request={request}>
+        {!isCancelled && (
+          <>
+            {request.invoiceSent === false && (
               <div>
-                <AcceptRequest />
+                <Button
+                  variant="outline"
+                  onClick={() => handleNotifyUser(id)}
+                  className="w-full cursor-pointer"
+                >
+                  Notify user
+                </Button>
               </div>
-            </div>
-          )}
-        {data.rideRequest.status === "assigned" && (
-          <div>
-            <Button
-              onClick={() => {
-                router.push(`/rider/dashboard/activeRequests/${id}/route`);
-              }}
-              className="w-full cursor-pointer"
-            >
-              Start Trip
-            </Button>
-          </div>
-        )}
-        {data.rideRequest.status === "in-progress" && (
-          <div>
-            <EndTrip />
-          </div>
+            )}
+            {request.status !== "assigned" &&
+              request.status !== "in-progress" &&
+              request.status !== "completed" && (
+                <div>
+                  <div>
+                    <AcceptRequest />
+                  </div>
+                </div>
+              )}
+            {request.status === "assigned" && (
+              <div>
+                <Button
+                  onClick={() => {
+                    router.push(`/rider/dashboard/activeRequests/${id}/route`);
+                  }}
+                  className="w-full cursor-pointer"
+                >
+                  Start Trip
+                </Button>
+              </div>
+            )}
+            {request.status === "in-progress" && (
+              <div>
+                <EndTrip />
+              </div>
+            )}
+          </>
         )}
       </RequestDetailWrapper>
     );
@@ -314,25 +337,48 @@ export function RequestDetail2({ id }: { id: string }) {
     return <div className="text-red-500">{Error.message}</div>;
   }
 
+  // TODO: Replace with your notify-user endpoint when ready
+  const handleNotifyUser = (rideRequestId: string) => {
+    showToast.success("Notify user", "Endpoint will be connected here.");
+  };
+
   if (!isPending && !isError) {
+    const request = data.rideRequest;
+    const isCancelled = request.status === "cancelled";
+
     return (
-      <RequestDetailWrapper request={data.rideRequest}>
-        {data.rideRequest.status === "assigned" && (
-          <div>
-            <Button
-              onClick={() => {
-                navigate.push(`/rider/dashboard/activeRequests/${id}/route`);
-              }}
-              className="w-full cursor-pointer"
-            >
-              Start Trip
-            </Button>
-          </div>
-        )}
-        {data.rideRequest.status === "in-progress" && (
-          <div>
-            <EndTrip />
-          </div>
+      <RequestDetailWrapper request={request}>
+        {!isCancelled && (
+          <>
+            {request.invoiceSent === false && (
+              <div>
+                <Button
+                  variant="outline"
+                  onClick={() => handleNotifyUser(id)}
+                  className="w-full cursor-pointer"
+                >
+                  Notify user
+                </Button>
+              </div>
+            )}
+            {request.status === "assigned" && (
+              <div>
+                <Button
+                  onClick={() => {
+                    navigate.push(`/rider/dashboard/activeRequests/${id}/route`);
+                  }}
+                  className="w-full cursor-pointer"
+                >
+                  Start Trip
+                </Button>
+              </div>
+            )}
+            {request.status === "in-progress" && (
+              <div>
+                <EndTrip />
+              </div>
+            )}
+          </>
         )}
       </RequestDetailWrapper>
     );

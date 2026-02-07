@@ -60,8 +60,13 @@ export function RequestTable() {
         // Navigate to the request detail page after successful acceptance
         router.push(`/rider/dashboard/requests/${id}`);
       },
-      onError() {
-        showToast.error("Failed to Accept Request");
+      onError(error: Error & { response?: { data?: { message?: string } } }) {
+        const apiMessage =
+          error?.response?.data?.message || error?.message;
+        showToast.error(
+          "Failed to Accept Request",
+          apiMessage ? String(apiMessage) : undefined
+        );
       },
     });
 
@@ -125,11 +130,30 @@ export function RequestTable() {
     );
   };
 
+  // TODO: Replace with your notify-user endpoint when ready
+  const handleNotifyUser = (rideRequestId: string) => {
+    // e.g. await notifyUserApi(rideRequestId);
+    showToast.success("Notify user", "Endpoint will be connected here.");
+  };
+
   const RowActions = ({ row }: { row: RideRequest }) => {
     const router = useRouter();
     if (row.status === "cancelled") return null;
     return (
-      <div className="flex gap-1 sm:gap-2">
+      <div className="flex flex-wrap gap-1 sm:gap-2">
+        {row.invoiceSent === false && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleNotifyUser(row._id);
+            }}
+            className="cursor-pointer shrink-0"
+          >
+            Notify user
+          </Button>
+        )}
         {row.status !== "assigned" &&
           row.status !== "in-progress" &&
           row.status !== "completed" && <AcceptRequest id={row._id} />}

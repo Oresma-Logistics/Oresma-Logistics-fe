@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { useJsApiLoader } from "@react-google-maps/api";
 import { LocationInput } from "@/components/shared/map/location-input";
 import { RouteMap } from "@/components/shared/map/route-map";
 import { VehicleSelector } from "@/components/shared/map/vehicle-selector";
@@ -10,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { RouteInfo } from "@/components/shared/map/route-info";
 import { LorryRecommendation } from "./lorryReconmended";
-import { availableMemory } from "process";
+
+const libraries: "places"[] = ["places"];
 
 const vehicles = [
   {
@@ -61,6 +63,12 @@ export function Booking() {
   const [shouldCalculate, setShouldCalculate] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const hasTriedGeolocation = useRef(false);
+
+  const { isLoaded: isGoogleLoaded } = useJsApiLoader({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries,
+  });
 
   useEffect(() => {
     const savedOrigin = Cookies.get("routeOrigin");
@@ -79,6 +87,36 @@ export function Booking() {
     
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  // Prefill start location from user's current position when no saved origin
+  useEffect(() => {
+    if (!isGoogleLoaded || hasTriedGeolocation.current) return;
+    const savedOrigin = Cookies.get("routeOrigin");
+    if (savedOrigin) return;
+    if (!navigator.geolocation || !window.google?.maps?.Geocoder) return;
+
+    hasTriedGeolocation.current = true;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const geocoder = new window.google.maps.Geocoder();
+        geocoder.geocode(
+          { location: { lat, lng } },
+          (results, status) => {
+            if (
+              status === window.google.maps.GeocoderStatus.OK &&
+              results?.[0]?.formatted_address
+            ) {
+              setOrigin(results[0].formatted_address);
+            }
+          }
+        );
+      },
+      () => {},
+      { timeout: 10000, maximumAge: 60_000, enableHighAccuracy: true }
+    );
+  }, [isGoogleLoaded]);
 
   console.log(params2.get("vehicle"));
 

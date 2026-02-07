@@ -202,19 +202,21 @@ export function TripProcess({ id }: { id: string }) {
     return <div className="text-red-500">{Error.message}</div>;
   }
 
-  const openGoogleMaps = (origin: string, destination: string) => {
-    const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(
-      origin
-    )}&destination=${encodeURIComponent(destination)}`;
-    window.open(url, "_blank");
-  };
-
   if (!isPending && !isError) {
     return (
       <div>
         <MapRoute
           origin={data.rideRequest.pickup.address}
           destination={data.rideRequest.dropoff.address}
+          topActions={
+            <div className="flex flex-wrap items-center gap-2">
+              {data.rideRequest.status === "assigned" && <StartProcess id={id} />}
+              {data.rideRequest.status !== "completed" &&
+                data.rideRequest.status !== "in-progress" && (
+                  <EndProcess id={id} />
+                )}
+            </div>
+          }
         />
         <div className="w-full max-md:max-w-2xl mx-auto  bg-card rounded-lg border border-border p-6 -mt-12 z-5 relative">
           {/* Driver Profile Section */}
@@ -264,26 +266,10 @@ export function TripProcess({ id }: { id: string }) {
                 {" "}
                 <StatusBadge status={data.rideRequest.status} />
               </div>
-              <Button
-                onClick={() =>
-                  openGoogleMaps(
-                    data.rideRequest.pickup.address,
-                    data.rideRequest.dropoff.address
-                  )
-                }
-                variant={"link"}
-                className=" cursor-pointer text-[#2563EB]"
-              >
-                Go to Google maps
-              </Button>
             </div>
           </div>
 
           <div className="flex gap-5">
-            {/* Location Headers */}
-            {data.rideRequest.status === "assigned" && <StartProcess id={id} />}
-            {data.rideRequest.status !== "completed" && data.rideRequest.status !== "in-progress" && <EndProcess id={id} />}
-            {/* Timeline Section */}
             {data.rideRequest.status === "in-progress" && <FinshProcess />}
             {data.rideRequest.status === "completed" && (
               <div className="space-y-6">

@@ -63,6 +63,17 @@ export default function MyRequestTable() {
     setCancelDialogOpen(true);
   };
 
+  // TODO: Replace with your payment API call when ready
+  const handleMakePayment = (rideRequestId: string) => {
+    // e.g. open payment URL, call payment API, etc.
+    showToast.success("Make payment", "Payment flow will be connected here.");
+  };
+
+  // TODO: Replace with your notify-rider endpoint when ready
+  const handleNotifyRider = (rideRequestId: string) => {
+    showToast.success("Notify rider", "Endpoint will be connected here.");
+  };
+
   const handleCancelConfirm = () => {
     if (!selectedRequestId) {
       showToast.error("Error", "Request ID is missing");
@@ -215,29 +226,59 @@ export default function MyRequestTable() {
           count={AllUserRequest.count}
           showCountBadge={true}
           rowActions2={(row) => {
-            if (!canCancel(row.status)) {
-              return null;
-            }
+            const isPending = row.status?.toLowerCase() === "pending";
+            const isPaymentSuccess = row.status?.toLowerCase() === "payment_success";
+            const showCancel = canCancel(row.status);
+            if (!isPending && !isPaymentSuccess && !showCancel) return null;
             return (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCancelClick(row._id);
-                }}
-                disabled={cancelMutation.isPending}
-                className="w-full"
-              >
-                {cancelMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Cancelling...
-                  </>
-                ) : (
-                  "Cancel Request"
+              <div className="flex flex-wrap gap-1 sm:gap-2">
+                {isPending && (
+                  <Button
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMakePayment(row._id);
+                    }}
+                    className="shrink-0"
+                  >
+                    Make payment
+                  </Button>
                 )}
-              </Button>
+                {isPaymentSuccess && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleNotifyRider(row._id);
+                    }}
+                    className="shrink-0"
+                  >
+                    Notify rider
+                  </Button>
+                )}
+                {showCancel && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCancelClick(row._id);
+                    }}
+                    disabled={cancelMutation.isPending}
+                    className="shrink-0"
+                  >
+                    {cancelMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Cancelling...
+                      </>
+                    ) : (
+                      "Cancel Request"
+                    )}
+                  </Button>
+                )}
+              </div>
             );
           }}
           //   onRowClick={(row) =>

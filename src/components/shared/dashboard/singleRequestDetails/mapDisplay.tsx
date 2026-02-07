@@ -10,9 +10,11 @@ import { Map } from "lucide-react";
 export default function MapRoute({
   origin,
   destination,
+  topActions,
 }: {
   origin: string;
   destination: string;
+  topActions?: React.ReactNode;
 }) {
   const [routeData, setRouteData] = useState<{
     duration: string;
@@ -45,10 +47,11 @@ export default function MapRoute({
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {topActions}
         <Button
           onClick={handleOpenGoogleMaps}
-          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white ml-auto"
         >
           <Map className="w-4 h-4" />
           Open in Google Maps
