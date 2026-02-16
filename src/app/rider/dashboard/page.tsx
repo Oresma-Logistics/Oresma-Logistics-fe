@@ -1,13 +1,11 @@
 import { PageHeader2 } from "@/components/shared/headers/page-headers";
-import { Button } from "@/components/ui/button";
-import { PeriodSelector } from "@/components/shared/dashboard/period-selector";
-import Link from "next/link";
 import TotalSales from "@/components/pages/rider/dashbord/totalSales";
+import { UpdateLocationButton } from "@/components/pages/rider/dashbord/update-location-button";
+import { IncomingRequestButton } from "@/components/pages/rider/dashbord/incoming-request-button";
 import { StatCard } from "@/components/shared/dashboard/stats-card";
 import { Menu, CalendarArrowDown } from "lucide-react";
 import { RecentTrip } from "@/components/pages/rider/dashbord/recentTrip";
 import { RegisteredVehicle } from "@/components/pages/rider/dashbord/registeredVehicle";
-import { Suspense } from "react";
 
 export default function DashboardPage() {
   return (
@@ -16,15 +14,8 @@ export default function DashboardPage() {
         title="Dashboard"
         actions={
           <>
-            <Suspense fallback={""}>
-              <PeriodSelector
-                options={[{ label: "30 Days", value: "30days" }]}
-                paramName="riderDashboardFliter"
-              />
-            </Suspense>
-            <Button className="rounded-full p-6 cursor-pointer" asChild>
-              <Link href="/rider/dashboard/requests"> incoming Request</Link>
-            </Button>
+            <UpdateLocationButton />
+            <IncomingRequestButton />
           </>
         }
       />

@@ -55,6 +55,9 @@ export function RequestTable() {
           queryKey: ["AvaliableRides"],
         });
         await queryClient.invalidateQueries({
+          queryKey: ["assignmentsCount"],
+        });
+        await queryClient.invalidateQueries({
           queryKey: ["Single Reques for Rider", id],
         });
         // Navigate to the request detail page after successful acceptance
@@ -97,6 +100,9 @@ export function RequestTable() {
       // Invalidate queries to refresh data
       await queryClient.invalidateQueries({
         queryKey: ["AvaliableRides"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["assignmentsCount"],
       });
       if (selectedRequestId) {
         await queryClient.invalidateQueries({

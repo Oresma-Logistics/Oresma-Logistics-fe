@@ -3,10 +3,18 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-
-const TOTAL_REQUESTS = 5 as number; // Hardcoded for now
+import { useQuery } from "@tanstack/react-query";
+import { getAssignmentsCount } from "@/_lib/api/rider/assignment";
 
 export function DashboardBanner() {
+  const { data } = useQuery({
+    queryKey: ["assignmentsCount"],
+    queryFn: getAssignmentsCount,
+    refetchInterval: 5000,
+  });
+
+  const totalRequests = data?.count ?? 0;
+
   return (
     <div className="relative rounded-xl overflow-hidden p-6 text-white shadow-[0_4px_4px_0_#00000040] py-6 px-5 min-h-[120px] flex flex-col justify-center">
       <div className="absolute inset-0">
@@ -20,9 +28,16 @@ export function DashboardBanner() {
         <div className="absolute inset-0 bg-black/40" />
       </div>
       <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <p className="text-lg font-semibold">
-          You have <span className="text-2xl font-bold">{TOTAL_REQUESTS}</span>{" "}
-          request{TOTAL_REQUESTS !== 1 ? "s" : ""}
+        <p className="text-lg font-semibold flex items-center gap-2 flex-wrap">
+          You have{" "}
+          <Button
+            asChild
+            size="lg"
+            className="text-2xl font-bold h-12 min-w-12 px-4 bg-secondaryT hover:bg-orange-600 text-white border-0"
+          >
+            <Link href="/dashboard/my-requests">{totalRequests}</Link>
+          </Button>{" "}
+          active ride{totalRequests !== 1 ? "s" : ""}
         </p>
         <div className="flex flex-wrap gap-2">
           <Button

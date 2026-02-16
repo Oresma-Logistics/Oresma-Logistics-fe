@@ -16,6 +16,11 @@ export async function getAssignmentRide() {
   return response.data;
 }
 
+export async function getAssignmentsCount(): Promise<{ success: boolean; count: number }> {
+  const response = await axiosInstance2.get("/ride-requests/assignments/count");
+  return response.data;
+}
+
 export async function getAvalialeRequest() {
   const response = await axiosInstance2.get("/ride-requests/payment-success");
   return response.data;
