@@ -5,22 +5,22 @@ import { Suspense } from "react";
 
 const recentTrips = [
   {
-    image: "/dashboard/car.png",
-    title: "Benrue - Warri",
+    image: "https://res.cloudinary.com/duyhha3mz/image/upload/v1760319030/car_zqtkkv.png",
+    title: "Lagos - Abuja",
     subtitle: "512 Station Carry Blue",
     distance: "12,400",
     price: "11,900",
   },
   {
-    image: "/dashboard/car.png",
-    title: "Benrue - Warri",
+    image: "https://res.cloudinary.com/duyhha3mz/image/upload/v1760319030/car_zqtkkv.png",
+    title: "Lagos - Enugu",
     subtitle: "512 Station Carry Blue",
     distance: "12,400",
     price: "11,900",
   },
   {
-    image: "/dashboard/car.png",
-    title: "Benrue - Warri",
+    image: "https://res.cloudinary.com/duyhha3mz/image/upload/v1760319030/car_zqtkkv.png",
+    title: "Lagos - Ondo",
     subtitle: "512 Station Carry Blue",
     distance: "12,400",
     price: "11,900",
@@ -32,7 +32,7 @@ export function RecentTravel() {
       {/* Recent Trips */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Recent travel info</h2>
+          <h2 className="text-lg font-semibold">Recent Taxi Trips</h2>
           <Suspense>
             <PeriodSelector
               options={[
