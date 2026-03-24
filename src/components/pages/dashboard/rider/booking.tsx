@@ -17,7 +17,7 @@ const libraries: "places"[] = ["places"];
 const vehicles = [
   {
     id: "car",
-    name: "Car",
+    name: "Taxi",
     image:
       "https://res.cloudinary.com/duyhha3mz/image/upload/v1760319030/car_zqtkkv.png",
     price: "₦2,500",
@@ -25,7 +25,7 @@ const vehicles = [
   },
   {
     id: "dispatch",
-    name: "Dispatch",
+    name: "Van",
     image:
       "https://res.cloudinary.com/duyhha3mz/image/upload/v1760319026/dispatch_tcox7e.jpg",
     price: "₦1,800",
@@ -33,7 +33,7 @@ const vehicles = [
   },
   {
     id: "keke",
-    name: "Bike",
+    name: "Dispatch",
     image:
       "https://res.cloudinary.com/duyhha3mz/image/upload/v1760319037/keke_mngdxu.png",
     price: "₦800",
@@ -41,7 +41,7 @@ const vehicles = [
   },
   {
     id: "lorry",
-    name: "Lorry",
+    name: "Truck",
     image:
       "https://res.cloudinary.com/duyhha3mz/image/upload/v1760319027/lorry_djnre2.png",
     price: "₦5,000",
